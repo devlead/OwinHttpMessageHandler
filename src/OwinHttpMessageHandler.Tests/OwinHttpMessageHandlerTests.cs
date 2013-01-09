@@ -1,13 +1,16 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Owin;
-using Owin.Builder;
-using Owin.Loader;
-using Xunit;
-
-namespace OwinHttpMessageHandler.Tests
+﻿namespace OwinHttpMessageHandler.Tests
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading.Tasks;
+    using Owin;
+    using Owin.Builder;
+    using Owin.Loader;
+    using OwinHttpMessageHander;
+    using Xunit;
+
     public class OwinHttpMessageHandlerTests
     {
         private readonly HttpClient _sut;
@@ -15,9 +18,9 @@ namespace OwinHttpMessageHandler.Tests
         public OwinHttpMessageHandlerTests()
         {
             var appBuilder = new AppBuilder();
-            new DefaultLoader().Load(typeof(Startup).FullName)(appBuilder);
-            var app = appBuilder.Build();
-            _sut = new HttpClient(new OwinHttpMessageHander.OwinHttpMessageHandler(app));
+            new DefaultLoader().Load(typeof (Startup).FullName)(appBuilder);
+            Func<IDictionary<string, object>, Task> app = appBuilder.Build();
+            _sut = new HttpClient(new OwinHttpMessageHandler(app));
         }
 
         [Fact]

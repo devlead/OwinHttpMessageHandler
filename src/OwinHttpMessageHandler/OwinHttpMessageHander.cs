@@ -1,35 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using CuttingEdge.Conditions;
-
-namespace OwinHttpMessageHander
+﻿namespace OwinHttpMessageHander
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Net;
+    using System.Net.Http;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using CuttingEdge.Conditions;
+
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
         private readonly Action<IDictionary<string, object>> _modifyEnvironment;
 
-        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc, Action<IDictionary<string, object>> modifyEnvironment = null)
+        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
+                                      Action<IDictionary<string, object>> modifyEnvironment = null)
         {
             Condition.Requires(appFunc).IsNotNull();
             _appFunc = appFunc;
-            _modifyEnvironment = modifyEnvironment ?? (env => {});
+            _modifyEnvironment = modifyEnvironment ?? (env => { });
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+                                                               CancellationToken cancellationToken)
         {
             IDictionary<string, object> env = request.ToEnvironment(cancellationToken);
             _modifyEnvironment(request.ToEnvironment(cancellationToken));
             return Task.Run(() =>
-            {
-                _appFunc(env);
-                return env.ToHttpResponseMessage(request);
-            }, cancellationToken);
+                            {
+                                _appFunc(env);
+                                return env.ToHttpResponseMessage(request);
+                            }, cancellationToken);
         }
     }
 
@@ -40,30 +42,32 @@ namespace OwinHttpMessageHander
             object value;
             if (env.TryGetValue(key, out value))
             {
-                return (T)value;
+                return (T) value;
             }
             return default(T);
         }
 
-        public static IDictionary<string, object> ToEnvironment(this HttpRequestMessage request, CancellationToken cancellationToken)
+        public static IDictionary<string, object> ToEnvironment(this HttpRequestMessage request,
+                                                                CancellationToken cancellationToken)
         {
             return new Dictionary<string, object>
-                      {
-                          {Constants.VersionKey, Constants.OwinVersion},
-                          {Constants.CallCancelledKey, cancellationToken},
-                          {Constants.RequestMethodKey, request.Method},
-                          {Constants.RequestSchemeKey, request.RequestUri.Scheme},
-                          {Constants.ResponseBodyKey, new MemoryStream()},
-                          {Constants.RequestPathKey, request.RequestUri.AbsolutePath}
-                      };
+                   {
+                       {Constants.VersionKey, Constants.OwinVersion},
+                       {Constants.CallCancelledKey, cancellationToken},
+                       {Constants.RequestMethodKey, request.Method},
+                       {Constants.RequestSchemeKey, request.RequestUri.Scheme},
+                       {Constants.ResponseBodyKey, new MemoryStream()},
+                       {Constants.RequestPathKey, request.RequestUri.AbsolutePath}
+                   };
         }
 
-        public static HttpResponseMessage ToHttpResponseMessage(this IDictionary<string, object> env, HttpRequestMessage request)
+        public static HttpResponseMessage ToHttpResponseMessage(this IDictionary<string, object> env,
+                                                                HttpRequestMessage request)
         {
             return new HttpResponseMessage
                    {
                        RequestMessage = request,
-                       StatusCode = (HttpStatusCode)Get<int>(env, Constants.ResponseStatusCodeKey),
+                       StatusCode = (HttpStatusCode) Get<int>(env, Constants.ResponseStatusCodeKey),
                        ReasonPhrase = Get<string>(env, Constants.ResponseReasonPhraseKey)
                    };
         }
