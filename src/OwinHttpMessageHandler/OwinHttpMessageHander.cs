@@ -1,21 +1,20 @@
-﻿namespace Owin.Testing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using CuttingEdge.Conditions;
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using CuttingEdge.Conditions;
 
+namespace OwinHttpMessageHander
+{
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
-        private readonly AppFunc _appFunc;
+        private readonly Func<IDictionary<string, object>, Task> _appFunc;
         private readonly Action<IDictionary<string, object>> _modifyEnvironment;
 
-        public OwinHttpMessageHandler(AppFunc appFunc, Action<IDictionary<string, object>> modifyEnvironment = null)
+        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc, Action<IDictionary<string, object>> modifyEnvironment = null)
         {
             Condition.Requires(appFunc).IsNotNull();
             _appFunc = appFunc;
@@ -53,7 +52,9 @@
                           {Constants.VersionKey, Constants.OwinVersion},
                           {Constants.CallCancelledKey, cancellationToken},
                           {Constants.RequestMethodKey, request.Method},
-                          {Constants.ResponseBodyKey, new MemoryStream()}
+                          {Constants.RequestSchemeKey, request.RequestUri.Scheme},
+                          {Constants.ResponseBodyKey, new MemoryStream()},
+                          {Constants.RequestPathKey, request.RequestUri.AbsolutePath}
                       };
         }
 
