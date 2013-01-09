@@ -44,6 +44,8 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="EnvironmentExtensions.cs" />
     <Compile Include="OwinHttpMessageHander.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
