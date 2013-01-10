@@ -22,6 +22,8 @@ var httpClient = new HttpClient(new OwinHttpMessageHandler(app, env =>
     }));
 ```
 
+More information on [Http Message Handlers]
+
 Follow me [@randompunter]
 
   [System.Net.Http.HttpMessageHandler]: http://msdn.microsoft.com/en-us/library/system.net.http.httpmessagehandler.aspx
@@ -29,4 +31,5 @@ Follow me [@randompunter]
   [OWIN]: http://owin.org/
   [HttpResponseMessage]: http://msdn.microsoft.com/en-us/library/system.net.http.httpresponsemessage.aspx
   [HttpClient]: http://msdn.microsoft.com/en-us/library/system.net.http.httpclient.aspx
+  [Http Message Handlers]: http://www.asp.net/web-api/overview/working-with-http/http-message-handlers
   [@randompunter]: http://twitter.com/randompunter
