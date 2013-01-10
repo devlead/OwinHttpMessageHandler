@@ -1,7 +1,7 @@
 OwinHttpMessageHandler
 =
 
-An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible  environment dictionary, calles the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call to call an OWIN application / component using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
+An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible  environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / component using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
 
 Using
 -
