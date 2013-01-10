@@ -13,7 +13,7 @@
         public const string RequestPathBaseKey = "owin.RequestPathBase";
         public const string RequestPathKey = "owin.RequestPath";
         public const string RequestQueryStringKey = "owin.RequestQueryString";
-        public const string HttpRequestProtocolKey = "owin.RequestProtocol";
+        public const string RequestProtocolKey = "owin.RequestProtocol";
         public const string HttpResponseProtocolKey = "owin.ResponseProtocol";
 
         public const string ResponseStatusCodeKey = "owin.ResponseStatusCode";

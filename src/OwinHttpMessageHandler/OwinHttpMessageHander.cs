@@ -23,13 +23,13 @@
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                                                                CancellationToken cancellationToken)
         {
-            IDictionary<string, object> env = request.ToEnvironment(cancellationToken);
-            _modifyEnvironment(request.ToEnvironment(cancellationToken));
-            return Task.Run(() =>
-                            {
-                                _appFunc(env);
-                                return env.ToHttpResponseMessage(request);
-                            }, cancellationToken);
+            return request.ToEnvironmentAsync(cancellationToken)
+                          .ContinueWith(task =>
+                                            {
+                                                var env = task.Result;
+                                                _appFunc(env);
+                                                return env.ToHttpResponseMessage(request);
+                                            });
         }
     }
 }
