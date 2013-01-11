@@ -1,5 +1,5 @@
 properties { 
-	$projectName = "OwinHttpMessageHander"
+	$projectName = "OwinHttpMessageHandler"
 	$buildNumber = 0
 	$rootDir  = Resolve-Path .\
 	$buildOutputDir = "$rootDir\build"

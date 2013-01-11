@@ -15,6 +15,6 @@
 	</references>
 	</metadata>
 	<files>
-		<file src="..\build\OwinHttpMessageHandler\bin\**" target="lib" />
+		<file src="build\OwinHttpMessageHandler\bin\net45\**" target="lib\net45" />
 	</files>
 </package>
