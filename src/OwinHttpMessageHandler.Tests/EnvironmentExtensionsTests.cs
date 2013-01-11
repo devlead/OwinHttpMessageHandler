@@ -1,7 +1,9 @@
 ﻿namespace OwinHttpMessageHandler.Tests
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading;
@@ -15,13 +17,16 @@
     {
         public class ToEnvironmentTests
         {
-            private readonly IDictionary<string, object> _sut;
             private readonly HttpRequestMessage _request;
+            private readonly IDictionary<string, object> _sut;
 
             public ToEnvironmentTests()
             {
                 var content = new StringContent("foo");
-                _request = new HttpRequestMessage(HttpMethod.Get, "https://example.com:8080/path?x=y"){ Content = content };
+                _request = new HttpRequestMessage(HttpMethod.Get, "https://example.com:8080/path?x=y")
+                               {
+                                   Content = content
+                               };
                 _request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
                 Task<IDictionary<string, object>> environmentAsync = _request.ToEnvironmentAsync(new CancellationToken());
                 environmentAsync.Wait();
@@ -131,19 +136,90 @@
             }
         }
 
-        public class ttpResponseMessageTests
+        public class ToHttpResponseMessageTests
         {
-            
+            private HttpResponseMessage _sut;
+
+            public ToHttpResponseMessageTests()
+            {
+                var content = new StringContent("foo");
+                var request = new HttpRequestMessage(HttpMethod.Get, "https://example.com:8080/path?x=y")
+                               {
+                                   Content = content
+                               };
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+                var env = new Dictionary<string, object>
+                       {
+                           {Constants.ResponseBodyKey, new MemoryStream().Write("foo")},
+                           {Constants.ResponseHeadersKey, new Dictionary<string, string[]>
+                                                              {
+                                                                  { Constants.ContentLengthHeader, new string[] { "3" } },
+                                                                  { Constants.ConnectionHeader, new string[] { "close" } }
+                                                              }},
+                           {Constants.ResponseStatusCodeKey, 302},
+                           {Constants.ResponseReasonPhraseKey, "302 Found"},
+                           {Constants.RequestProtocolKey, "HTTP/1.1"}
+                       };
+                _sut = env.ToHttpResponseMessage(request);
+            }
+
+            [Fact]
+            public void Should_have_StatusCode()
+            {
+                Assert.Equal(HttpStatusCode.Found, _sut.StatusCode);
+            }
+
+            [Fact]
+            public void Should_have_ReasonPhrase()
+            {
+                Assert.Equal("302 Found", _sut.ReasonPhrase);
+            }
+
+            [Fact]
+            public void Should_have_RequestMessage()
+            {
+                Assert.NotNull(_sut.RequestMessage);
+            }
+
+            [Fact]
+            public void Should_have_version()
+            {
+                Assert.Equal(new Version(1,1), _sut.Version);
+            }
+
+            [Fact]
+            public void Should_have_Headers()
+            {
+                Assert.NotEmpty(_sut.Headers);
+            }
+
+            [Fact]
+            public void Should_have_ContentHeaders()
+            {
+                Assert.NotEmpty(_sut.Content.Headers);
+            }
+
+            [Fact]
+            public void Should_have_Content()
+            {
+                Assert.NotNull(_sut.Content);
+            }
         }
     }
 
     // ReSharper restore InconsistentNaming
 
-    public static class DictionaryExtensions
+    public static class ExtensionHelpers
     {
-        public static T Get<T>(this IDictionary<string, object> dict, string key)
+        public static T Get<T>(this IDictionary<string, object> dictionary, string key)
         {
-            return (T) dict[key];
+            return (T) dictionary[key];
+        }
+
+        public static Stream Write(this Stream stream, string s)
+        {
+            new StreamWriter(stream).Write(s);
+            return stream;
         }
     }
 }

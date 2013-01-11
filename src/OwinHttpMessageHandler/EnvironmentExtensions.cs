@@ -52,12 +52,19 @@
         public static HttpResponseMessage ToHttpResponseMessage(this IDictionary<string, object> env,
                                                                 HttpRequestMessage request)
         {
-            return new HttpResponseMessage
+            var response = new HttpResponseMessage
                        {
                            RequestMessage = request,
                            StatusCode = (HttpStatusCode) Get<int>(env, Constants.ResponseStatusCodeKey),
-                           ReasonPhrase = Get<string>(env, Constants.ResponseReasonPhraseKey)
+                           ReasonPhrase = Get<string>(env, Constants.ResponseReasonPhraseKey),
+                           Content = new StreamContent(Get<Stream>(env, Constants.ResponseBodyKey))
                        };
+            foreach (var header in Get <IDictionary<string, string[]>>(env, Constants.ResponseHeadersKey))
+            {
+                response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                response.Headers.TryAddWithoutValidation(header.Key, header.Value);
+            }
+            return response;
         }
     }
 }
