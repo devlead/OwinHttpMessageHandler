@@ -44,6 +44,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="App_Packages\Gate.Extensions.Sources.0.27\AppBuilderInlineExtensions.cs" />
     <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Cascade.cs" />
     <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Chunked.cs" />
@@ -99,7 +102,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OwinHttpMessageHandler\OwinHttpMessageHandler.csproj">

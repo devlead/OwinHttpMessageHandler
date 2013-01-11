@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+	<metadata>
+		<id>OwinHttpMessageHandler</id>
+		<version>0.0.0.0</version>
+		<authors>Damian Hickey</authors>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>An implementation of HttpMessageHandler that invokes requests against an OWIN application. Useful for testing and embedded scenarios.</description>
+		<dependencies/>
+		<frameworkAssemblies>
+			<frameworkAssembly assemblyName="System.Web" />
+		</frameworkAssemblies>
+	<references>
+		<reference file="OwinHttpMessageHandler.dll" />
+	</references>
+	</metadata>
+	<files>
+		<file src="..\build\OwinHttpMessageHandler\bin\**" target="lib" />
+	</files>
+</package>
