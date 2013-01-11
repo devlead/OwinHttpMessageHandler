@@ -28,7 +28,7 @@ task Compile {
 }
 
 task RunTests -depends Compile {
-	$xunitRunner = "$srcDir\tools\xunit.runners.1.9.1\xunit.console.clr4.exe"
+	$xunitRunner = "$rootDir\tools\xunit.runners.1.9.1\xunit.console.clr4.exe"
 	Get-ChildItem . -Recurse -Include *Tests.csproj, Tests.*.csproj | % {
 		$project = $_.BaseName
 		if(!(Test-Path $reportsDir\xUnit\$project)){
