@@ -47,8 +47,3 @@ task CreateNuGetPackages -depends CopyBuildOutput {
 	$packageVersion = Get-Version $assemblyInfoFilePath
 	exec { .$rootDir\Tools\nuget.exe pack $srcDir\OwinHttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
 }
-
-task PublishPackages {
-	$packages = Get-ChildItem $buildOutputDir\*.nupkg
-}
-    Publish-Packages $packages
