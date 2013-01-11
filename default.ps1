@@ -1,7 +1,7 @@
 properties { 
-	$projectName = "OwinHttpMessageHandler"
+	$projectName = "OwinHttpMessageHander"
 	$buildNumber = 0
-	$rootDir  = Resolve-Path ..\
+	$rootDir  = Resolve-Path .\
 	$buildOutputDir = "$rootDir\build"
 	$reportsDir = "$buildOutputDir\reports"
 	$srcDir = "$rootDir\src"
@@ -9,7 +9,7 @@ properties {
 	$assemblyInfoFilePath = "$srcDir\SharedAssemblyInfo.cs"
 }
 
-task default -depends Clean, UpdateVersion, RunTests, CopyBuildOutput
+task default -depends Clean, UpdateVersion, RunTests, CopyBuildOutput, CreateNuGetPackages
 
 task Clean {
 	Remove-Item $buildOutputDir -Force -Recurse -ErrorAction SilentlyContinue
@@ -28,30 +28,27 @@ task Compile {
 }
 
 task RunTests -depends Compile {
-	$xunitRunner = "$toolsPath\XUnitRunner\xunit.console.clr4.exe"
-	Invoke-Tests $reportsDir $xunitRunner $srcDir Release
-	
-	$mspecRunner = @(gci -r -i mspec-clr4.exe $srcDir)[0].FullName
-	exec { &$mspecRunner "$srcDir\Beam.Domain.Tests\bin\Release\Beam.Domain.Tests.dll" }
+	$xunitRunner = "$srcDir\packages\xunit.runners.1.9.1\tools\xunit.console.clr4.exe"
+	Get-ChildItem . -Recurse -Include *Tests.csproj, Tests.*.csproj | % {
+		$project = $_.BaseName
+		if(!(Test-Path $reportsDir\xUnit\$project)){
+			New-Item $reportsDir\xUnit\$project -Type Directory
+		}
+        .$xunitRunner "$srcDir\$project\bin\Release\$project.dll" /html "$reportsDir\xUnit\$project\index.html"
+    }
 }
-
 task CopyBuildOutput -depends Compile {
 	$binOutputDir = "$buildOutputDir\OwinHttpMessageHandler\bin\net45\"
 	New-Item $binOutputDir -Type Directory
-	@("OwinHttpMessageHandler.???") |% { Copy-Item "$srcDir\OwinHttpMessageHandler\bin\Release\$_" $binOutputDir}
+	gci $srcDir\OwinHttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\OwinHttpMessageHandler\bin\Release\$_" $binOutputDir}
 }
 
 task CreateNuGetPackages -depends CopyBuildOutput {
-	$nugetPath = Get-Item .
-    Invoke-NugetPackRecursive $assemblyInfoFilePath $buildOutputDir $nugetPath $rootDir
-	
 	$packageVersion = Get-Version $assemblyInfoFilePath
-	Get-ChildItem $rootDir\nuget -Recurse -Include *.nuspec | % { 
-		exec { .$nugetPath\nuget.exe pack $_ -BasePath .\ -o $buildOutputDir -version $packageVersion }
-	}
+	exec { .$rootDir\Tools\nuget.exe pack $srcDir\OwinHttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
 }
 
 task PublishPackages {
 	$packages = Get-ChildItem $buildOutputDir\*.nupkg
-    Publish-Packages $packages
 }
+    Publish-Packages $packages
