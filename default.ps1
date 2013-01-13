@@ -38,12 +38,17 @@ task RunTests -depends Compile {
     }
 }
 task CopyBuildOutput -depends Compile {
-	$binOutputDir = "$buildOutputDir\OwinHttpMessageHandler\bin\net45\"
+	$binOutputDir = "$buildOutputDir\Assembly\OwinHttpMessageHandler\bin\net45\"
 	New-Item $binOutputDir -Type Directory
+	New-Item "$buildOutputDir\Source" -Type Directory
 	gci $srcDir\OwinHttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\OwinHttpMessageHandler\bin\Release\$_" $binOutputDir}
+	gci $srcDir\OwinHttpMessageHandler\*.cs |% { Copy-Item $_ "$buildOutputDir\Source"  }
+	gci "$buildOutputDir\Source\*.cs" |% (Get-Content $_.FullName) | % {$_ -replace "public", "internal" } | Set-Content -path $fileInfo.FullName
 }
 
 task CreateNuGetPackages -depends CopyBuildOutput {
 	$packageVersion = Get-Version $assemblyInfoFilePath
-	exec { .$rootDir\Tools\nuget.exe pack $srcDir\OwinHttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	copy-item $srcDir\*.nuspec $buildOutputDir
+	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\OwinHttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\OwinHttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
 }
