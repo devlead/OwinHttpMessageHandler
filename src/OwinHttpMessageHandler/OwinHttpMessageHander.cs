@@ -5,7 +5,6 @@
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using CuttingEdge.Conditions;
 
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
@@ -15,7 +14,7 @@
         public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
                                       Action<IDictionary<string, object>> modifyEnvironment = null)
         {
-            Condition.Requires(appFunc).IsNotNull();
+            if(appFunc == null) throw new ArgumentNullException("appFunc");
             _appFunc = appFunc;
             _modifyEnvironment = modifyEnvironment ?? (env => { });
         }
@@ -25,11 +24,11 @@
         {
             return request.ToEnvironmentAsync(cancellationToken)
                           .ContinueWith(task =>
-                                            {
-                                                var env = task.Result;
-                                                _appFunc(env);
-                                                return env.ToHttpResponseMessage(request);
-                                            });
+                                        {
+                                            IDictionary<string, object> env = task.Result;
+                                            _appFunc(env);
+                                            return env.ToHttpResponseMessage(request);
+                                        });
         }
     }
 }
