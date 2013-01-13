@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Net;
     using System.Net.Http;
     using System.Threading.Tasks;
@@ -41,6 +42,17 @@
         {
             HttpResponseMessage response = await _sut.GetAsync("http://sample.com/NotFound");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Should_handle_form_data()
+        {
+            HttpResponseMessage response = await _sut.PostAsync("http://sample.com/greeting",
+                               new FormUrlEncodedContent(new List<KeyValuePair<string, string>>
+                                                         {
+                                                             new KeyValuePair<string, string>("Name", "Damian")
+                                                         }));
+            Assert.Equal("Hello Damian", await response.Content.ReadAsStringAsync());
         }
     }
 }
