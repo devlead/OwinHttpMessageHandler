@@ -13,6 +13,6 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="build\Source\**\*.cs" target="content\App_Packages\OwinHttpMessageHandler.$version$" />
+		<file src="build\Source\**\*.cs" target="content\App_Packages\OwinHttpMessageHandler.Sources.$version$" />
 	</files>
 </package>
