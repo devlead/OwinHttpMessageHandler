@@ -43,7 +43,7 @@ task CopyBuildOutput -depends Compile {
 	New-Item "$buildOutputDir\Source" -Type Directory
 	gci $srcDir\OwinHttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\OwinHttpMessageHandler\bin\Release\$_" $binOutputDir}
 	gci $srcDir\OwinHttpMessageHandler\*.cs |% { Copy-Item $_ "$buildOutputDir\Source"  }
-	gci "$buildOutputDir\Source\*.cs" |% (Get-Content $_.FullName) | % {$_ -replace "public", "internal" } | Set-Content -path $fileInfo.FullName
+	gci $buildOutputDir\Source\*.cs |%  { (gc $_) -replace "public", "internal" | sc -path $_ }
 }
 
 task CreateNuGetPackages -depends CopyBuildOutput {
