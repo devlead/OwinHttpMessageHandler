@@ -7,7 +7,7 @@
     <ProjectGuid>{954281C1-E27C-4850-A609-34395AB14F6E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OwinHttpMessageHandler.Tests</RootNamespace>
+    <RootNamespace>OwinHttpMessageHandler</RootNamespace>
     <AssemblyName>OwinHttpMessageHandler.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
