@@ -1,4 +1,4 @@
-﻿namespace OwinHttpMessageHander
+﻿namespace OwinHttpMessageHandler
 {
     public static class Constants
     {
