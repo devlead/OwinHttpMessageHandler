@@ -28,18 +28,14 @@
             _afterInvoke = afterInvoke ?? (env => { });
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                                                                CancellationToken cancellationToken)
         {
-            return ToEnvironmentAsync(request, cancellationToken)
-                .ContinueWith(task =>
-                              {
-                                  IDictionary<string, object> env = task.Result;
-                                  _beforeInvoke(env);
-                                  _appFunc(env);
-                                  _afterInvoke(env);
-                                  return ToHttpResponseMessage(env, request);
-                              });
+            IDictionary<string, object> env = await ToEnvironmentAsync(request, cancellationToken);
+            _beforeInvoke(env);
+            await _appFunc(env);
+            _afterInvoke(env);
+            return ToHttpResponseMessage(env, request);
         }
 
         public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request,
