@@ -43,9 +43,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Constants.cs" />
-    <Compile Include="EnvironmentExtensions.cs" />
-    <Compile Include="OwinHttpMessageHander.cs" />
+    <Compile Include="OwinHttpMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

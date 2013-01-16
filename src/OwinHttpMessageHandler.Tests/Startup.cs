@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Gate;
-using Owin;
-
-namespace OwinHttpMessageHandler.Tests
+﻿namespace OwinHttpMessageHandler.Tests
 {
-	public class Startup
+    using System;
+    using System.Collections.Generic;
+    using Gate;
+    using Owin;
+
+    public class Startup
 	{
         private readonly Dictionary<string, Action<Request, Response>> _responders = new Dictionary<string, Action<Request, Response>>();
 
