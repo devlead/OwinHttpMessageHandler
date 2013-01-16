@@ -12,17 +12,20 @@
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
-        private readonly Action<IDictionary<string, object>> _modifyEnvironment;
+        private readonly Action<IDictionary<string, object>> _beforeInvoke;
+        private readonly Action<IDictionary<string, object>> _afterInvoke;
 
         public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
-                                      Action<IDictionary<string, object>> modifyEnvironment = null)
+                                      Action<IDictionary<string, object>> beforeInvoke = null,
+                                      Action<IDictionary<string, object>> afterInvoke = null)
         {
             if (appFunc == null)
             {
                 throw new ArgumentNullException("appFunc");
             }
             _appFunc = appFunc;
-            _modifyEnvironment = modifyEnvironment ?? (env => { });
+            _beforeInvoke = beforeInvoke ?? (env => { });
+            _afterInvoke = afterInvoke ?? (env => { });
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -32,8 +35,9 @@
                 .ContinueWith(task =>
                               {
                                   IDictionary<string, object> env = task.Result;
-                                  _modifyEnvironment(env);
+                                  _beforeInvoke(env);
                                   _appFunc(env);
+                                  _afterInvoke(env);
                                   return ToHttpResponseMessage(env, request);
                               });
         }
@@ -49,39 +53,39 @@
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
-                       {Constants.VersionKey, Constants.OwinVersion},
-                       {Constants.CallCancelledKey, cancellationToken},
-                       {Constants.ServerRemoteIpAddressKey, "127.0.0.1"},
-                       {Constants.ServerRemotePortKey, "1024"},
-                       {Constants.ServerIsLocalKey, true},
-                       {Constants.ServerLocalIpAddressKey, "127.0.0.1"},
-                       {Constants.ServerLocalPortKey, request.RequestUri.Port.ToString()},
-                       {Constants.ServerCapabilities, new List<IDictionary<string, object>>()},
-                       {Constants.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
-                       {Constants.RequestSchemeKey, request.RequestUri.Scheme},
-                       {Constants.ResponseBodyKey, new MemoryStream()},
-                       {Constants.RequestPathKey, request.RequestUri.AbsolutePath},
-                       {Constants.RequestQueryStringKey, query},
-                       {Constants.RequestBodyKey, requestBody},
-                       {Constants.RequestHeadersKey, headers},
-                       {Constants.RequestPathBaseKey, string.Empty},
-                       {Constants.RequestProtocolKey, "HTTP/" + request.Version}
+                       {OwinConstants.VersionKey, OwinConstants.OwinVersion},
+                       {OwinConstants.CallCancelledKey, cancellationToken},
+                       {OwinConstants.ServerRemoteIpAddressKey, "127.0.0.1"},
+                       {OwinConstants.ServerRemotePortKey, "1024"},
+                       {OwinConstants.ServerIsLocalKey, true},
+                       {OwinConstants.ServerLocalIpAddressKey, "127.0.0.1"},
+                       {OwinConstants.ServerLocalPortKey, request.RequestUri.Port.ToString()},
+                       {OwinConstants.ServerCapabilities, new List<IDictionary<string, object>>()},
+                       {OwinConstants.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
+                       {OwinConstants.RequestSchemeKey, request.RequestUri.Scheme},
+                       {OwinConstants.ResponseBodyKey, new MemoryStream()},
+                       {OwinConstants.RequestPathKey, request.RequestUri.AbsolutePath},
+                       {OwinConstants.RequestQueryStringKey, query},
+                       {OwinConstants.RequestBodyKey, requestBody},
+                       {OwinConstants.RequestHeadersKey, headers},
+                       {OwinConstants.RequestPathBaseKey, string.Empty},
+                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version}
                    };
         }
 
         public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env,
                                                                 HttpRequestMessage request)
         {
-            var responseBody = Get<Stream>(env, Constants.ResponseBodyKey);
+            var responseBody = Get<Stream>(env, OwinConstants.ResponseBodyKey);
             responseBody.Position = 0;
             var response = new HttpResponseMessage
                            {
                                RequestMessage = request,
-                               StatusCode = (HttpStatusCode) Get<int>(env, Constants.ResponseStatusCodeKey),
-                               ReasonPhrase = Get<string>(env, Constants.ResponseReasonPhraseKey),
+                               StatusCode = (HttpStatusCode) Get<int>(env, OwinConstants.ResponseStatusCodeKey),
+                               ReasonPhrase = Get<string>(env, OwinConstants.ResponseReasonPhraseKey),
                                Content = new StreamContent(responseBody)
                            };
-            var headers = Get<IDictionary<string, string[]>>(env, Constants.ResponseHeadersKey);
+            var headers = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeadersKey);
             if (headers != null)
             {
                 foreach (var header in headers)
@@ -103,7 +107,7 @@
             return default(T);
         }
 
-        public static class Constants
+        public static class OwinConstants
         {
             public const string VersionKey = "owin.Version";
             public const string OwinVersion = "1.0";
