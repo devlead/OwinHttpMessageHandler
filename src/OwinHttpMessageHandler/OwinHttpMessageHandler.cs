@@ -12,30 +12,30 @@
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
-        private readonly Action<IDictionary<string, object>> _modifyEnvironment;
+        private readonly Action<IDictionary<string, object>> _beforeInvoke;
+        private readonly Action<IDictionary<string, object>> _afterInvoke;
 
         public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
-                                      Action<IDictionary<string, object>> modifyEnvironment = null)
+                                      Action<IDictionary<string, object>> beforeInvoke = null,
+                                      Action<IDictionary<string, object>> afterInvoke = null)
         {
             if (appFunc == null)
             {
                 throw new ArgumentNullException("appFunc");
             }
             _appFunc = appFunc;
-            _modifyEnvironment = modifyEnvironment ?? (env => { });
+            _beforeInvoke = beforeInvoke ?? (env => { });
+            _afterInvoke = afterInvoke ?? (env => { });
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                                                                CancellationToken cancellationToken)
         {
-            return ToEnvironmentAsync(request, cancellationToken)
-                .ContinueWith(task =>
-                              {
-                                  IDictionary<string, object> env = task.Result;
-                                  _modifyEnvironment(env);
-                                  _appFunc(env);
-                                  return ToHttpResponseMessage(env, request);
-                              });
+            IDictionary<string, object> env = await ToEnvironmentAsync(request, cancellationToken);
+            _beforeInvoke(env);
+            await _appFunc(env);
+            _afterInvoke(env);
+            return ToHttpResponseMessage(env, request);
         }
 
         public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request,
@@ -49,39 +49,39 @@
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
-                       {Constants.VersionKey, Constants.OwinVersion},
-                       {Constants.CallCancelledKey, cancellationToken},
-                       {Constants.ServerRemoteIpAddressKey, "127.0.0.1"},
-                       {Constants.ServerRemotePortKey, "1024"},
-                       {Constants.ServerIsLocalKey, true},
-                       {Constants.ServerLocalIpAddressKey, "127.0.0.1"},
-                       {Constants.ServerLocalPortKey, request.RequestUri.Port.ToString()},
-                       {Constants.ServerCapabilities, new List<IDictionary<string, object>>()},
-                       {Constants.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
-                       {Constants.RequestSchemeKey, request.RequestUri.Scheme},
-                       {Constants.ResponseBodyKey, new MemoryStream()},
-                       {Constants.RequestPathKey, request.RequestUri.AbsolutePath},
-                       {Constants.RequestQueryStringKey, query},
-                       {Constants.RequestBodyKey, requestBody},
-                       {Constants.RequestHeadersKey, headers},
-                       {Constants.RequestPathBaseKey, string.Empty},
-                       {Constants.RequestProtocolKey, "HTTP/" + request.Version}
+                       {OwinConstants.VersionKey, OwinConstants.OwinVersion},
+                       {OwinConstants.CallCancelledKey, cancellationToken},
+                       {OwinConstants.ServerRemoteIpAddressKey, "127.0.0.1"},
+                       {OwinConstants.ServerRemotePortKey, "1024"},
+                       {OwinConstants.ServerIsLocalKey, true},
+                       {OwinConstants.ServerLocalIpAddressKey, "127.0.0.1"},
+                       {OwinConstants.ServerLocalPortKey, request.RequestUri.Port.ToString()},
+                       {OwinConstants.ServerCapabilities, new List<IDictionary<string, object>>()},
+                       {OwinConstants.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
+                       {OwinConstants.RequestSchemeKey, request.RequestUri.Scheme},
+                       {OwinConstants.ResponseBodyKey, new MemoryStream()},
+                       {OwinConstants.RequestPathKey, request.RequestUri.AbsolutePath},
+                       {OwinConstants.RequestQueryStringKey, query},
+                       {OwinConstants.RequestBodyKey, requestBody},
+                       {OwinConstants.RequestHeadersKey, headers},
+                       {OwinConstants.RequestPathBaseKey, string.Empty},
+                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version}
                    };
         }
 
         public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env,
                                                                 HttpRequestMessage request)
         {
-            var responseBody = Get<Stream>(env, Constants.ResponseBodyKey);
+            var responseBody = Get<Stream>(env, OwinConstants.ResponseBodyKey);
             responseBody.Position = 0;
             var response = new HttpResponseMessage
                            {
                                RequestMessage = request,
-                               StatusCode = (HttpStatusCode) Get<int>(env, Constants.ResponseStatusCodeKey),
-                               ReasonPhrase = Get<string>(env, Constants.ResponseReasonPhraseKey),
+                               StatusCode = (HttpStatusCode) Get<int>(env, OwinConstants.ResponseStatusCodeKey),
+                               ReasonPhrase = Get<string>(env, OwinConstants.ResponseReasonPhraseKey),
                                Content = new StreamContent(responseBody)
                            };
-            var headers = Get<IDictionary<string, string[]>>(env, Constants.ResponseHeadersKey);
+            var headers = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeadersKey);
             if (headers != null)
             {
                 foreach (var header in headers)
@@ -103,7 +103,7 @@
             return default(T);
         }
 
-        public static class Constants
+        public static class OwinConstants
         {
             public const string VersionKey = "owin.Version";
             public const string OwinVersion = "1.0";
@@ -124,9 +124,6 @@
             public const string ResponseHeadersKey = "owin.ResponseHeaders";
             public const string ResponseBodyKey = "owin.ResponseBody";
 
-            public const string ClientCertifiateKey = "ssl.ClientCertificate";
-            public const string LoadClientCertAsyncKey = "ssl.LoadClientCertAsync";
-
             public const string ServerRemoteIpAddressKey = "server.RemoteIpAddress";
             public const string ServerRemotePortKey = "server.RemotePort";
             public const string ServerLocalIpAddressKey = "server.LocalIpAddress";
@@ -136,18 +133,12 @@
             public const string ServerUserKey = "server.User";
             public const string ServerCapabilities = "server.Capabilities";
 
-            public const string WebSocketVersionKey = "websocket.Version";
-            public const string WebSocketVersion = "1.0";
-            public const string WebSocketAcceptKey = "websocket.Accept";
-            public const string WebSocketSubProtocolKey = "websocket.SubProtocol";
-
             public const string HostHeader = "Host";
             public const string WwwAuthenticateHeader = "WWW-Authenticate";
             public const string ContentLengthHeader = "Content-Length";
             public const string TransferEncodingHeader = "Transfer-Encoding";
             public const string KeepAliveHeader = "Keep-Alive";
             public const string ConnectionHeader = "Connection";
-            public const string SecWebSocketProtocol = "Sec-WebSocket-Protocol";
         }
     }
 }

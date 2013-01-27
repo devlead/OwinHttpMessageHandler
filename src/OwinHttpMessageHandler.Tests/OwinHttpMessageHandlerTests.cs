@@ -39,74 +39,74 @@
             [Fact]
             public void Should_have_Version()
             {
-                Assert.NotNull(_sut[OwinHttpMessageHandler.Constants.VersionKey]);
+                Assert.NotNull(_sut[OwinHttpMessageHandler.OwinConstants.VersionKey]);
             }
 
             [Fact]
             public void Should_have_CallCanceled()
             {
-                Assert.NotNull(_sut[OwinHttpMessageHandler.Constants.CallCancelledKey]);
+                Assert.NotNull(_sut[OwinHttpMessageHandler.OwinConstants.CallCancelledKey]);
             }
 
             [Fact]
             public void Should_have_ServerRemoteIpAddress()
             {
-                Assert.Equal("127.0.0.1", _sut.Get<string>(OwinHttpMessageHandler.Constants.ServerRemoteIpAddressKey));
+                Assert.Equal("127.0.0.1", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerRemoteIpAddressKey));
             }
 
             [Fact]
             public void Should_have_ServerRemotePort()
             {
-                Assert.Equal("1024", _sut.Get<string>(OwinHttpMessageHandler.Constants.ServerRemotePortKey));
+                Assert.Equal("1024", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerRemotePortKey));
             }
 
             [Fact]
             public void Should_have_ServerLocalIpAddress()
             {
-                Assert.Equal("127.0.0.1", _sut.Get<string>(OwinHttpMessageHandler.Constants.ServerLocalIpAddressKey));
+                Assert.Equal("127.0.0.1", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerLocalIpAddressKey));
             }
 
             [Fact]
             public void Should_have_ServerLocalPort()
             {
-                Assert.Equal("8080", _sut.Get<string>(OwinHttpMessageHandler.Constants.ServerLocalPortKey));
+                Assert.Equal("8080", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerLocalPortKey));
             }
 
             [Fact]
             public void Should_have_empty_server_capabilities()
             {
-                Assert.NotNull(_sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.Constants.ServerCapabilities));
-                Assert.Empty(_sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.Constants.ServerCapabilities));
+                Assert.NotNull(_sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.OwinConstants.ServerCapabilities));
+                Assert.Empty(_sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.OwinConstants.ServerCapabilities));
             }
 
             [Fact]
             public void Should_have_IsLocal_true()
             {
-                Assert.Equal(true, _sut.Get<bool>(OwinHttpMessageHandler.Constants.ServerIsLocalKey));
+                Assert.Equal(true, _sut.Get<bool>(OwinHttpMessageHandler.OwinConstants.ServerIsLocalKey));
             }
 
             [Fact]
             public void Should_have_RequestMethod()
             {
-                Assert.Equal(_request.Method.ToString().ToUpperInvariant(), _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestMethodKey));
+                Assert.Equal(_request.Method.ToString().ToUpperInvariant(), _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestMethodKey));
             }
 
             [Fact]
             public void Should_have_RequestPath()
             {
-                Assert.Equal(_request.RequestUri.AbsolutePath, _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestPathKey));
+                Assert.Equal(_request.RequestUri.AbsolutePath, _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathKey));
             }
 
             [Fact]
             public void Should_have_RequestQueryString()
             {
-                Assert.Equal("x=y", _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestQueryStringKey));
+                Assert.Equal("x=y", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestQueryStringKey));
             }
 
             [Fact]
             public void Should_have_RequestBody()
             {
-                var stream = _sut.Get<Stream>(OwinHttpMessageHandler.Constants.RequestBodyKey);
+                var stream = _sut.Get<Stream>(OwinHttpMessageHandler.OwinConstants.RequestBodyKey);
                 Assert.NotNull(stream);
                 string body = new StreamReader(stream).ReadToEnd();
                 Assert.Equal("foo", body);
@@ -115,7 +115,7 @@
             [Fact]
             public void Should_have_RequestHeaders()
             {
-                var headers = _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.RequestHeadersKey);
+                var headers = _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey);
                 Assert.NotNull(headers);
                 Assert.NotEmpty(headers);
             }
@@ -123,19 +123,19 @@
             [Fact]
             public void Should_have_RequestPathBase()
             {
-                Assert.Equal(string.Empty, _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestPathBaseKey));
+                Assert.Equal(string.Empty, _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathBaseKey));
             }
 
             [Fact]
             public void Should_have_RequestProtocol()
             {
-                Assert.Equal("HTTP/1.1", _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestProtocolKey));
+                Assert.Equal("HTTP/1.1", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestProtocolKey));
             }
 
             [Fact]
             public void Should_have_RequestScheme()
             {
-                Assert.Equal("https", _sut.Get<string>(OwinHttpMessageHandler.Constants.RequestSchemeKey));
+                Assert.Equal("https", _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestSchemeKey));
             }
         }
 
@@ -153,17 +153,17 @@
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
                 var env = new Dictionary<string, object>
                           {
-                              {OwinHttpMessageHandler.Constants.ResponseBodyKey, new MemoryStream().Write("foo")},
+                              {OwinHttpMessageHandler.OwinConstants.ResponseBodyKey, new MemoryStream().Write("foo")},
                               {
-                                  OwinHttpMessageHandler.Constants.ResponseHeadersKey, new Dictionary<string, string[]>
+                                  OwinHttpMessageHandler.OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>
                                                                 {
-                                                                    {OwinHttpMessageHandler.Constants.ContentLengthHeader, new[] {"3"}},
-                                                                    {OwinHttpMessageHandler.Constants.ConnectionHeader, new[] {"close"}}
+                                                                    {OwinHttpMessageHandler.OwinConstants.ContentLengthHeader, new[] {"3"}},
+                                                                    {OwinHttpMessageHandler.OwinConstants.ConnectionHeader, new[] {"close"}}
                                                                 }
                               },
-                              {OwinHttpMessageHandler.Constants.ResponseStatusCodeKey, 302},
-                              {OwinHttpMessageHandler.Constants.ResponseReasonPhraseKey, "302 Found"},
-                              {OwinHttpMessageHandler.Constants.RequestProtocolKey, "HTTP/1.1"}
+                              {OwinHttpMessageHandler.OwinConstants.ResponseStatusCodeKey, 302},
+                              {OwinHttpMessageHandler.OwinConstants.ResponseReasonPhraseKey, "302 Found"},
+                              {OwinHttpMessageHandler.OwinConstants.RequestProtocolKey, "HTTP/1.1"}
                           };
                 _sut = OwinHttpMessageHandler.ToHttpResponseMessage(env, request);
             }
