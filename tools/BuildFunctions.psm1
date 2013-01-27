@@ -63,16 +63,3 @@ function Update-Version
 
 	Move-Item $tmpFile $assemblyInfoFilePath -force
 }
-
-function Publish-Packages
-{
-	param
-	(
-		[array]$packages,
-        [string]$destinationPath = "\\storage.int.beamfs.com\Dev\Packages\NuGet"
-	)	
-	
-	foreach ($package in $packages) {
-		Copy-Item $package $destinationPath
-	}
-}
