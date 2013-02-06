@@ -41,6 +41,12 @@
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="Owin.Extensions">
+      <HintPath>..\packages\Owin.Extensions.0.8.1-alpha\lib\net40\Owin.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin.Types">
+      <HintPath>..\packages\Owin.Types.0.8.1-alpha\lib\net40\Owin.Types.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="Microsoft.CSharp" />
@@ -55,56 +61,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Gate.Extensions.Sources.0.27\AppBuilderInlineExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Cascade.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Chunked.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\ContentLength.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\ContentType.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\HeadSuppression.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Mapping\AppBuilderMapExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Mapping\MapBuilder.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Mapping\UrlMapper.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\MethodOverride.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\NotFound.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\PassiveValidator.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\RequestLogger.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\RequestTracer.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\ShowExceptions.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\ShowExceptions.View.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Static.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\StaticFiles\FileBody.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\StaticFiles\FileServer.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\StaticFiles\Mime.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\StaticFiles\TextBody.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\TraceMethod.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Utils\FilterStream.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Utils\HttpFormatExtensions.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Utils\RangeHeader.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Utils\TriggerStream.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\WebSockets\OpaqueToWebSocket.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\WebSockets\WebSocketLayer.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\Wilson.cs" />
-    <Compile Include="App_Packages\Gate.Middleware.Sources.0.27\XSendFile.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\BuilderProperties.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Headers.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\OwinConstants.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Request.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Response.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Utils\Net40Extensions.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Utils\ParamDictionary.cs" />
-    <Compile Include="App_Packages\Gate.Sources.0.27\Utils\ReasonPhrases.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.6.5\AppBuilder.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.6.5\GlobalSuppressions.cs" />
-    <Compile Include="App_Packages\Owin.Builder.Sources.0.6.5\NotFound.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.5\StartupExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.5\StartupExtensions.Func.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.6.5\StartupExtensions.Type.cs" />
-    <Compile Include="App_Packages\Owin.Loader.Sources.0.6.5\DefaultLoader.cs" />
-    <Compile Include="App_Packages\Owin.Loader.Sources.0.6.5\GlobalSuppressions.cs" />
-    <Compile Include="App_Packages\Owin.Loader.Sources.0.6.5\NullLoader.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpers.cs" />
-    <Compile Include="App_Packages\TaskHelpers.Sources.0.2\TaskHelpersExtensions.cs" />
-    <Compile Include="ExtensionHelpers.cs" />
+    <Compile Include="OwinExtensionHelpers.cs" />
     <Compile Include="OwinHttpMessageHandlerTests.cs" />
     <Compile Include="Startup.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
