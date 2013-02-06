@@ -9,6 +9,7 @@
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using Microsoft.Owin.Hosting.Builder;
     using Owin;
     using Owin.Builder;
     using Owin.Loader;
@@ -78,7 +79,7 @@
             {
                 _sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.OwinConstants.ServerCapabilities)
                     .Should()
-                    .NotBeEmpty();
+                    .BeEmpty();
             }
 
             [Fact]
@@ -215,10 +216,10 @@
 
         public OwinHttpMessageHandlerTests()
         {
-            var appBuilder = new AppBuilder();
-            new DefaultLoader().Load(typeof (Startup).FullName)(appBuilder);
-            Func<IDictionary<string, object>, Task> app = appBuilder.Build();
-            _sut = new HttpClient(new OwinHttpMessageHandler(app));
+            var appBuilder = new DefaultAppBuilderFactory().Create();
+            new Startup().Configuration(appBuilder);
+            Func<IDictionary<string, object>, Task> appFunc = appBuilder.Build();
+            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc));
         }
 
         [Fact]
@@ -231,13 +232,13 @@
         [Fact]
         public async Task Should_get_status_OK()
         {
-            (await _sut.GetAsync("http://sample.com/OK")).Should().Be(HttpStatusCode.OK);
+            (await _sut.GetAsync("http://sample.com/OK")).StatusCode.Should().Be(HttpStatusCode.OK);
         }
 
         [Fact]
         public async Task Should_get_status_NotFound()
         {
-            (await _sut.GetAsync("http://sample.com/NotFound")).Should().Be(HttpStatusCode.NotFound);
+            (await _sut.GetAsync("http://sample.com/NotFound")).StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
 
         [Fact]
