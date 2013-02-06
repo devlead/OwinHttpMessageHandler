@@ -1,5 +1,5 @@
 properties { 
-	$projectName = "OwinHttpMessageHandler"
+	$projectName = "Owin.HttpMessageHandler"
 	$buildNumber = 0
 	$rootDir  = Resolve-Path .\
 	$buildOutputDir = "$rootDir\build"
@@ -38,17 +38,17 @@ task RunTests -depends Compile {
     }
 }
 task CopyBuildOutput -depends Compile {
-	$binOutputDir = "$buildOutputDir\Assembly\OwinHttpMessageHandler\bin\net45\"
+	$binOutputDir = "$buildOutputDir\Assembly\Owin.HttpMessageHandler\bin\net45\"
 	New-Item $binOutputDir -Type Directory
 	New-Item "$buildOutputDir\Source" -Type Directory
-	gci $srcDir\OwinHttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\OwinHttpMessageHandler\bin\Release\$_" $binOutputDir}
-	gci $srcDir\OwinHttpMessageHandler\*.cs |% { Copy-Item $_ "$buildOutputDir\Source"  }
+	gci $srcDir\Owin.HttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\Owin.HttpMessageHandler\bin\Release\$_" $binOutputDir}
+	gci $srcDir\Owin.HttpMessageHandler\*.cs |% { Copy-Item $_ "$buildOutputDir\Source"  }
 	gci $buildOutputDir\Source\*.cs |%  { (gc $_) -replace "public", "internal" | sc -path $_ }
 }
 
 task CreateNuGetPackages -depends CopyBuildOutput {
 	$packageVersion = Get-Version $assemblyInfoFilePath
 	copy-item $srcDir\*.nuspec $buildOutputDir
-	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\OwinHttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
-	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\OwinHttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
 }
