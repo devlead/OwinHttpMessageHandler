@@ -122,6 +122,14 @@ namespace OwinHttpMessageHandler.Tests
             }
 
             [Fact]
+            public void Should_have_ResponseHeaders()
+            {
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.ResponseHeadersKey)
+                    .Should()
+                    .NotBeNull();
+            }
+
+            [Fact]
             public void Should_have_ContentTypeHeader()
             {
                 _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey)

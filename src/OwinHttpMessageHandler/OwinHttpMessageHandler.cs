@@ -72,7 +72,8 @@ namespace Owin
                        {OwinConstants.RequestBodyKey, requestBody},
                        {OwinConstants.RequestHeadersKey, headers},
                        {OwinConstants.RequestPathBaseKey, string.Empty},
-                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version}
+                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version},
+                       {OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>() }
                    };
         }
 
