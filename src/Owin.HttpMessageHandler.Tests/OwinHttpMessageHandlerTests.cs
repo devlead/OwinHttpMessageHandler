@@ -1,4 +1,4 @@
-﻿namespace OwinHttpMessageHandler.Tests
+﻿namespace Owin.HttpMessageHandler.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -11,8 +11,6 @@
     using FluentAssertions;
     using Microsoft.Owin.Hosting.Builder;
     using Owin;
-    using Owin.Builder;
-    using Owin.Loader;
     using Xunit;
 
     // ReSharper disable InconsistentNaming

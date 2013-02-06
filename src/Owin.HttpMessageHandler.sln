@@ -9,14 +9,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4ECFEF
 		.nuget\packages.config = .nuget\packages.config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinHttpMessageHandler", "OwinHttpMessageHandler\OwinHttpMessageHandler.csproj", "{A9E2AA7E-0219-4621-AECF-131B58482A78}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OwinHttpMessageHandler.Tests", "OwinHttpMessageHandler.Tests\OwinHttpMessageHandler.Tests.csproj", "{954281C1-E27C-4850-A609-34395AB14F6E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD83A700-24FA-48E2-95F8-0A4EA8FA18E7}"
 	ProjectSection(SolutionItems) = preProject
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Owin.HttpMessageHandler", "Owin.HttpMessageHandler\Owin.HttpMessageHandler.csproj", "{A9E2AA7E-0219-4621-AECF-131B58482A78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Owin.HttpMessageHandler.Tests", "Owin.HttpMessageHandler.Tests\Owin.HttpMessageHandler.Tests.csproj", "{954281C1-E27C-4850-A609-34395AB14F6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
