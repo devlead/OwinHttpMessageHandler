@@ -1,4 +1,4 @@
-﻿namespace OwinHttpMessageHandler
+﻿namespace Owin
 {
     using System;
     using System.Collections.Generic;
