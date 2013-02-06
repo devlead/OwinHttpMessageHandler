@@ -47,7 +47,11 @@ namespace Owin
             string query = string.IsNullOrWhiteSpace(request.RequestUri.Query)
                                ? string.Empty
                                : request.RequestUri.Query.Substring(1);
-            var httpHeaders = new List<HttpHeaders> {request.Headers, request.Content.Headers};
+            var httpHeaders = new List<HttpHeaders> { request.Headers };
+            if (request.Content != null)
+            {
+                httpHeaders.Add(request.Content.Headers);
+            }
             var headers = httpHeaders.SelectMany(_ => _).ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
