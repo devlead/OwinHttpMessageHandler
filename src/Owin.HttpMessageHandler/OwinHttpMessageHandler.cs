@@ -1,4 +1,7 @@
-﻿namespace Owin
+﻿using System.Linq;
+using System.Net.Http.Headers;
+
+namespace Owin
 {
     using System;
     using System.Collections.Generic;
@@ -44,8 +47,12 @@
             string query = string.IsNullOrWhiteSpace(request.RequestUri.Query)
                                ? string.Empty
                                : request.RequestUri.Query.Substring(1);
-            Dictionary<string, string[]> headers = request.Headers.ToDictionary(pair => pair.Key,
-                                                                                pair => pair.Value.ToArray());
+            var httpHeaders = new List<HttpHeaders> { request.Headers };
+            if (request.Content != null)
+            {
+                httpHeaders.Add(request.Content.Headers);
+            }
+            var headers = httpHeaders.SelectMany(_ => _).ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
@@ -65,7 +72,8 @@
                        {OwinConstants.RequestBodyKey, requestBody},
                        {OwinConstants.RequestHeadersKey, headers},
                        {OwinConstants.RequestPathBaseKey, string.Empty},
-                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version}
+                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version},
+                       {OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>() }
                    };
         }
 
@@ -136,6 +144,7 @@
             public const string HostHeader = "Host";
             public const string WwwAuthenticateHeader = "WWW-Authenticate";
             public const string ContentLengthHeader = "Content-Length";
+            public const string ContentTypeHeader = "Content-Type";
             public const string TransferEncodingHeader = "Transfer-Encoding";
             public const string KeepAliveHeader = "Keep-Alive";
             public const string ConnectionHeader = "Connection";
