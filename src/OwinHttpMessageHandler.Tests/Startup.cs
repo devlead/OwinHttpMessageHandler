@@ -1,4 +1,4 @@
-﻿namespace Owin.Tests
+﻿namespace OwinHttpMessageHandler.Tests
 {
     using System;
     using System.Collections.Generic;

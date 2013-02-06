@@ -11,7 +11,6 @@
     using Owin;
     using Owin.Builder;
     using Owin.Loader;
-    using Owin.Tests;
     using Xunit;
 
     // ReSharper disable InconsistentNaming
