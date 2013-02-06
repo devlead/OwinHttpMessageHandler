@@ -124,7 +124,7 @@
             [Fact]
             public void Should_have_RequestPathBase()
             {
-               _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathBaseKey).Should().NotBeEmpty();
+               _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathBaseKey).Should().NotBeNull();
             }
 
             [Fact]
@@ -217,6 +217,7 @@
         public OwinHttpMessageHandlerTests()
         {
             var appBuilder = new DefaultAppBuilderFactory().Create();
+            appBuilder.Properties["builder.DefaultApp"] = new Func<IDictionary<string, object>, Task>(env => Task.FromResult((object)null));//HACK 
             new Startup().Configuration(appBuilder);
             Func<IDictionary<string, object>, Task> appFunc = appBuilder.Build();
             _sut = new HttpClient(new OwinHttpMessageHandler(appFunc));

@@ -14,7 +14,7 @@
 
         static readonly char[] CommaSemicolon = new[] { ',', ';' };
 
-        public static IDictionary<string, string> ReadForm(this OwinRequest request)
+        internal static IDictionary<string, string> ReadForm(this OwinRequest request)
         {
             if (!request.HasFormData() && !request.HasParseableData())
             {
@@ -36,7 +36,7 @@
             return form;
         }
 
-        public static bool HasFormData(this OwinRequest request)
+        internal static bool HasFormData(this OwinRequest request)
         {
             var contentType = request.ContentType();
             return (request.Method == "POST" && string.IsNullOrEmpty(contentType))
@@ -44,14 +44,14 @@
                    || contentType == "multipart/form-data";
         }
 
-        public static bool HasParseableData(this OwinRequest request)
+        internal static bool HasParseableData(this OwinRequest request)
         {
             var mediaType = request.MediaType();
             return mediaType == "application/x-www-form-urlencoded"
                    || mediaType == "multipart/form-data";
         }
 
-        public static string MediaType(this OwinRequest request)
+        internal static string MediaType(this OwinRequest request)
         {
             var contentType = request.ContentType();
             if (contentType == null)
@@ -60,14 +60,15 @@
             return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
         }
 
-        public static string ContentType(this OwinRequest owinRequest)
+        internal static string ContentType(this OwinRequest owinRequest)
         {
             return owinRequest.GetHeader("Content-Type");
         }
 
         public static T Get<T>(this IDictionary<string, object> dictionary, string key)
         {
-            return (T)dictionary[key];
+            object value;
+            return dictionary.TryGetValue(key, out value) ? (T)value : default(T);
         }
 
         public static Stream Write(this Stream stream, string s)
@@ -88,7 +89,7 @@
             }
         }
 
-        public static string ReadText(this OwinRequest request)
+        internal static string ReadText(this OwinRequest request)
         {
             var text = request.Get<string>("Gate.Request.Text");
 
@@ -114,7 +115,7 @@
             return text;
         }
 
-        public static void Write(this OwinResponse response, string text)
+        internal static void Write(this OwinResponse response, string text)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
             response.Body.Write(bytes, 0, bytes.Length);

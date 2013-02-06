@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Owin;
     using Owin.Types;
 
@@ -23,7 +24,11 @@
 
         public void Configuration(IAppBuilder builder)
         {
-            builder.UseFilter(request =>  _responders[request.Path](request, new OwinResponse(request)));
+            builder.UseFilter(request =>
+                              {
+                                  _responders[request.Path](request, new OwinResponse(request));
+                                  return Task.FromResult((object) null);
+                              });
         }
     }
 }
