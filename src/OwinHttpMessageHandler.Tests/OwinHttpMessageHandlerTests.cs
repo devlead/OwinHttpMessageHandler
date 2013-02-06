@@ -1,4 +1,6 @@
-﻿namespace OwinHttpMessageHandler.Tests
+﻿using Owin.Types;
+
+namespace OwinHttpMessageHandler.Tests
 {
     using System;
     using System.Collections.Generic;
@@ -11,8 +13,6 @@
     using FluentAssertions;
     using Microsoft.Owin.Hosting.Builder;
     using Owin;
-    using Owin.Builder;
-    using Owin.Loader;
     using Xunit;
 
     // ReSharper disable InconsistentNaming
@@ -119,6 +119,13 @@
                     _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey)
                         .Should()
                         .NotBeEmpty();
+            }
+
+            [Fact]
+            public void Should_have_ContentTypeHeader()
+            {
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey)
+                    .Should().ContainKey(OwinHttpMessageHandler.OwinConstants.ContentTypeHeader);
             }
 
             [Fact]
