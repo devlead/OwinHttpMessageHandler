@@ -1,3 +1,5 @@
+(This is now superceded by Microsoft.Owin.Testing.OwinClientHandler) 
+
 Owin.HttpMessageHandler
 =
 
