@@ -57,16 +57,16 @@
     </Compile>
     <Compile Include="App_Packages\Owin.Extensions.Sources.0.8.1-alpha\GlobalSuppressions.cs" />
     <Compile Include="App_Packages\Owin.Extensions.Sources.0.8.1-alpha\StartupExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\Extensions\OwinRequestExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\Helpers\OwinHelpers.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinConstants.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinOpaque.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinOpaqueParameters.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinRequest.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinResponse.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinWebSocket.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinWebSocketParameters.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.1-alpha\OwinWebSocketReceiveMessage.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\Extensions\OwinRequestExtensions.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\Helpers\OwinHelpers.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinConstants.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinOpaque.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinOpaqueParameters.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinRequest.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinResponse.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocket.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocketParameters.cs" />
+    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocketReceiveMessage.cs" />
     <Compile Include="OwinExtensionHelpers.cs" />
     <Compile Include="OwinHttpMessageHandlerTests.cs" />
     <Compile Include="Startup.cs" />
