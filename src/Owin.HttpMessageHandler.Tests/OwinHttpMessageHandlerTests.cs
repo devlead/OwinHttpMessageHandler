@@ -233,7 +233,7 @@
             appBuilder.Properties["builder.DefaultApp"] = new Func<IDictionary<string, object>, Task>(env => Task.FromResult((object)null));//HACK 
             new Startup().Configuration(appBuilder);
             Func<IDictionary<string, object>, Task> appFunc = appBuilder.Build();
-            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc));
+            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc) { UseCookies = true });
         }
 
         [Fact]

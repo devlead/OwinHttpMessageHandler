@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.Net.Http.Headers;
-
-namespace Owin
+﻿namespace Owin
 {
     using System;
     using System.Collections.Generic;
@@ -9,14 +6,16 @@ namespace Owin
     using System.Linq;
     using System.Net;
     using System.Net.Http;
+    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
 
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
+        private readonly Action<IDictionary<string, object>> _afterInvoke;
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
         private readonly Action<IDictionary<string, object>> _beforeInvoke;
-        private readonly Action<IDictionary<string, object>> _afterInvoke;
+        private readonly CookieContainer _cookieContainer = new CookieContainer();
 
         public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
                                       Action<IDictionary<string, object>> beforeInvoke = null,
@@ -31,14 +30,24 @@ namespace Owin
             _afterInvoke = afterInvoke ?? (env => { });
         }
 
+        public bool UseCookies { get; set; }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-                                                               CancellationToken cancellationToken)
+                                                                     CancellationToken cancellationToken)
         {
+            if (UseCookies)
+            {
+                string cookieHeader = _cookieContainer.GetCookieHeader(request.RequestUri);
+                if (!string.IsNullOrEmpty(cookieHeader))
+                {
+                    request.Headers.Add("Cookie", cookieHeader);
+                }
+            }
             IDictionary<string, object> env = await ToEnvironmentAsync(request, cancellationToken);
             _beforeInvoke(env);
             await _appFunc(env);
             _afterInvoke(env);
-            return ToHttpResponseMessage(env, request);
+            return ToHttpResponseMessage(env, request, UseCookies ? _cookieContainer : null);
         }
 
         public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request,
@@ -47,12 +56,13 @@ namespace Owin
             string query = string.IsNullOrWhiteSpace(request.RequestUri.Query)
                                ? string.Empty
                                : request.RequestUri.Query.Substring(1);
-            var httpHeaders = new List<HttpHeaders> { request.Headers };
+            var httpHeaders = new List<HttpHeaders> {request.Headers};
             if (request.Content != null)
             {
                 httpHeaders.Add(request.Content.Headers);
             }
-            var headers = httpHeaders.SelectMany(_ => _).ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
+            Dictionary<string, string[]> headers = httpHeaders.SelectMany(_ => _)
+                                                              .ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
@@ -73,12 +83,12 @@ namespace Owin
                        {OwinConstants.RequestHeadersKey, headers},
                        {OwinConstants.RequestPathBaseKey, string.Empty},
                        {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version},
-                       {OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>() }
+                       {OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>()}
                    };
         }
 
-        public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env,
-                                                                HttpRequestMessage request)
+        public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env, HttpRequestMessage request,
+                                                                CookieContainer cookieContainer = null)
         {
             var responseBody = Get<Stream>(env, OwinConstants.ResponseBodyKey);
             responseBody.Position = 0;
@@ -96,6 +106,16 @@ namespace Owin
                 {
                     response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
                     response.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+            if (cookieContainer != null)
+            {
+                IEnumerable<string> setCookieHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeadersKey)
+                    .Where(kvp => kvp.Key == "Set-Cookie")
+                    .SelectMany(kvp => kvp.Value);
+                foreach (string setCookieHeader in setCookieHeaders)
+                {
+                    cookieContainer.SetCookies(request.RequestUri, setCookieHeader);
                 }
             }
             return response;
