@@ -87,9 +87,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Owin.HttpMessageHandlerPCL\Owin.HttpMessageHandler%28net4+sl4+win8+wp7%29.csproj">
+    <ProjectReference Include="..\Owin.HttpMessageHandler%28net4+sl4+win8+wp7%29\Owin.HttpMessageHandler%28portable-net40+sl4+win8+wp71%29.csproj">
       <Project>{50ec6529-e6a2-4377-a21d-510bfdf59b1a}</Project>
-      <Name>Owin.HttpMessageHandler%28net4+sl4+win8+wp7%29</Name>
+      <Name>Owin.HttpMessageHandler%28portable-net40+sl4+win8+wp71%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
