@@ -7,6 +7,7 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>An implementation of HttpMessageHandler for use with HttpClient that invokes direct requests against an OWIN application. Useful for testing and embedded scenarios.</description>
 		<projectUrl>https://github.com/damianh/Owin.HttpMessageHandler</projectUrl>
+		<tags>owin httpclient</tags>
 		<frameworkAssemblies>
 			<frameworkAssembly assemblyName="System.Net.Http" targetFramework="portable-net45+win8"/>
 		</frameworkAssemblies>
