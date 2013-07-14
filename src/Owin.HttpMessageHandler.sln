@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{4ECFEF
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD83A700-24FA-48E2-95F8-0A4EA8FA18E7}"
 	ProjectSection(SolutionItems) = preProject
+		Owin.HttpMessageHandler.nuspec = Owin.HttpMessageHandler.nuspec
+		Owin.HttpMessageHandler.Sources.nuspec = Owin.HttpMessageHandler.Sources.nuspec
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
 	EndProjectSection
 EndProject
