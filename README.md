@@ -3,6 +3,12 @@ Owin.HttpMessageHandler
 
 An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / component using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
 
+This is distributed as two nuget packages:
+
+```Owin.HttpMessageHandler``` contains two portable class libraries supporting the same platforms as HttpClient, including .Net 4+, Silverlight 4+ and Windows Phone 7.5+.
+
+```Owin.HttpMessageHandler.Sources``` contains just the source code if you want include it in your app or library without taking on a package dependency.
+
 Using
 -
 ```csharp
