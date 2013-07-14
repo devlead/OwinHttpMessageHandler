@@ -40,7 +40,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Owin.HttpMessageHandler\OwinHttpMessageHandler.cs">
+    <Compile Include="..\Owin.HttpMessageHandler%28portable-net45+win8%29\OwinHttpMessageHandler.cs">
       <Link>OwinHttpMessageHandler.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
