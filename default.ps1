@@ -38,17 +38,18 @@ task RunTests -depends Compile {
     }
 }
 task CopyBuildOutput -depends Compile {
-	$binOutputDir = "$buildOutputDir\Assembly\Owin.HttpMessageHandler\bin\net45\"
-	New-Item $binOutputDir -Type Directory
+	New-Item "$buildOutputDir\bin\portable-net45+win8\" -Type Directory
+	New-Item "$buildOutputDir\bin\portable-net40+sl4+win8+wp71\" -Type Directory
 	New-Item "$buildOutputDir\Source" -Type Directory
-	gci $srcDir\Owin.HttpMessageHandler\bin\Release |% { Copy-Item "$srcDir\Owin.HttpMessageHandler\bin\Release\$_" $binOutputDir}
-	gci $srcDir\Owin.HttpMessageHandler\*.cs |% { Copy-Item $_ "$buildOutputDir\Source"  }
+	gci "$srcDir\Owin.HttpMessageHandler(portable-net45+win8)\bin\Release" |% { Copy-Item $_.FullName "$buildOutputDir\bin\portable-net45+win8\" }
+	gci "$srcDir\Owin.HttpMessageHandler(portable-net40+sl4+win8+wp71)\bin\Release" |% { Copy-Item $_.FullName "$buildOutputDir\bin\portable-net40+sl4+win8+wp71\"}
+	gci "$srcDir\Owin.HttpMessageHandler(portable-net45+win8)\*.cs" |% { Copy-Item $_ "$buildOutputDir\Source"  }
 	gci $buildOutputDir\Source\*.cs |%  { (gc $_) -replace "public", "internal" | sc -path $_ }
 }
 
 task CreateNuGetPackages -depends CopyBuildOutput {
 	$packageVersion = Get-Version $assemblyInfoFilePath
 	copy-item $srcDir\*.nuspec $buildOutputDir
-	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
-	exec { .$rootDir\Tools\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	exec { .$srcDir\.nuget\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+	exec { .$srcDir\.nuget\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
 }

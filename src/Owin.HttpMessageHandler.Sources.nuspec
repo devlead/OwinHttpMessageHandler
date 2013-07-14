@@ -5,12 +5,10 @@
 		<version>$version$</version>
 		<authors>Damian Hickey</authors>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
-		<description>An implementation of HttpMessageHandler that invokes requests against an OWIN application. Useful for testing and embedded scenarios. This packages contains source code that is added to your project instead of a dll.</description>
+		<description>An implementation of HttpMessageHandler for use with HttpClient that invokes direct requests against an OWIN application. Useful for testing and embedded scenarios. This package contains source code that is added to your project instead of a dll and/or package dependency.</description>
 		<dependencies/>
 		<projectUrl>https://github.com/damianh/Owin.HttpMessageHandler</projectUrl>
-		<frameworkAssemblies>
-			<frameworkAssembly assemblyName="System.Web" />
-		</frameworkAssemblies>
+		<frameworkAssemblies/>
 	</metadata>
 	<files>
 		<file src="build\Source\**\*.cs" target="content\App_Packages\Owin.HttpMessageHandler.Sources.$version$" />
