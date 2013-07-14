@@ -1,34 +1,38 @@
-﻿namespace Owin.HttpMessageHandler.Tests
+﻿namespace Owin.HttpMessageHandler
 {
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Owin;
-    using Owin.Types;
+    using Microsoft.Owin;
 
     public class Startup
     {
-        private readonly Dictionary<string, Action<OwinRequest, OwinResponse>> _responders =
-            new Dictionary<string, Action<OwinRequest, OwinResponse>>();
-
-        public Startup()
-        {
-            _responders.Add("/OK", (request, response) => response.StatusCode = 200);
-            _responders.Add("/NotFound", (request, response) => response.StatusCode = 404);
-            _responders.Add("/greeting", (request, response) =>
-                                         {
-                                             IDictionary<string, string> form = request.ReadForm();
-                                             response.Write("Hello " + form["Name"]);
-                                         });
-        }
-
         public void Configuration(IAppBuilder builder)
         {
-            builder.UseFilter(request =>
-                              {
-                                  _responders[request.Path](request, new OwinResponse(request));
-                                  return Task.FromResult((object) null);
-                              });
+            builder.Use<TestApp>();
+        }
+
+        private class TestApp : OwinMiddleware
+        {
+            private readonly Dictionary<string, Action<IOwinContext>> _responders = new Dictionary<string, Action<IOwinContext>>();
+
+            public TestApp(OwinMiddleware next)
+                : base(next)
+            {
+                _responders.Add("/OK", context => context.Response.StatusCode = 200);
+                _responders.Add("/NotFound", context => context.Response.StatusCode = 404);
+                _responders.Add("/greeting", context =>
+                {
+                    var form = context.Request.ReadFormAsync().Result;
+                    context.Response.Write("Hello " + form["Name"]);
+                });
+            }
+
+            public override Task Invoke(IOwinContext context)
+            {
+                _responders[context.Request.Path](context);
+                return Task.FromResult((object)null);
+            }
         }
     }
 }

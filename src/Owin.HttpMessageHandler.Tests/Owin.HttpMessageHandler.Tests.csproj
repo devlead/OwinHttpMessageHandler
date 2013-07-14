@@ -32,11 +32,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FluentAssertions">
-      <HintPath>..\packages\FluentAssertions.2.0.0.1\lib\net45\FluentAssertions.dll</HintPath>
+    <Reference Include="FluentAssertions, Version=2.0.1.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\FluentAssertions.2.0.1\lib\net45\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Owin.Hosting">
-      <HintPath>..\packages\Microsoft.Owin.Hosting.0.19-alpha-20206-46\lib\net40\Microsoft.Owin.Hosting.dll</HintPath>
+    <Reference Include="Microsoft.Owin, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.Owin.2.0.0-rc1-20714-460\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Hosting, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.Owin.Hosting.2.0.0-rc1-20714-460\lib\net45\Microsoft.Owin.Hosting.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -55,18 +61,6 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.8.1-alpha\GlobalSuppressions.cs" />
-    <Compile Include="App_Packages\Owin.Extensions.Sources.0.8.1-alpha\StartupExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\Extensions\OwinRequestExtensions.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\Helpers\OwinHelpers.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinConstants.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinOpaque.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinOpaqueParameters.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinRequest.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinResponse.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocket.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocketParameters.cs" />
-    <Compile Include="App_Packages\Owin.Types.Sources.0.8.3-alpha\OwinWebSocketReceiveMessage.cs" />
     <Compile Include="OwinExtensionHelpers.cs" />
     <Compile Include="OwinHttpMessageHandlerTests.cs" />
     <Compile Include="Startup.cs" />

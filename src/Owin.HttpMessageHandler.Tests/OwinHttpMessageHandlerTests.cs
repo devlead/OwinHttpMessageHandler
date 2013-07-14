@@ -1,4 +1,4 @@
-﻿namespace Owin.HttpMessageHandler.Tests
+﻿namespace Owin.HttpMessageHandler
 {
     using System;
     using System.Collections.Generic;
@@ -229,10 +229,9 @@
 
         public OwinHttpMessageHandlerTests()
         {
-            var appBuilder = new DefaultAppBuilderFactory().Create();
-            appBuilder.Properties["builder.DefaultApp"] = new Func<IDictionary<string, object>, Task>(env => Task.FromResult((object)null));//HACK 
+            var appBuilder = new AppBuilderFactory().Create();
             new Startup().Configuration(appBuilder);
-            Func<IDictionary<string, object>, Task> appFunc = appBuilder.Build();
+            var appFunc = (Func<IDictionary<string, object>, Task>)appBuilder.Build(typeof(Func<IDictionary<string, object>, Task>));
             _sut = new HttpClient(new OwinHttpMessageHandler(appFunc) { UseCookies = true });
         }
 

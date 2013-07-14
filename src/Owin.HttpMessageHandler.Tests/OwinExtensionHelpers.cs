@@ -1,4 +1,4 @@
-﻿namespace Owin.HttpMessageHandler.Tests
+﻿namespace Owin.HttpMessageHandler
 {
     using System;
     using System.Collections;
@@ -6,7 +6,7 @@
     using System.IO;
     using System.Linq;
     using System.Text;
-    using Owin.Types;
+    using Microsoft.Owin;
 
     public static class OwinExtensionHelpers
     {
@@ -21,9 +21,9 @@
                 return ParamDictionary.Parse("");
             }
 
-            var form = request.Dictionary.Get<IDictionary<string, string>>("Gate.Request.Form");
+            var form = request.Environment.Get<IDictionary<string, string>>("Gate.Request.Form");
             var thisInput = request.Body;
-            var lastInput = request.Dictionary.Get<object>("Gate.Request.Form#input");
+            var lastInput = request.Environment.Get<object>("Gate.Request.Form#input");
             if (form != null && ReferenceEquals(thisInput, lastInput))
             {
                 return form;
@@ -36,7 +36,7 @@
             return form;
         }
 
-        internal static bool HasFormData(this OwinRequest request)
+        private static bool HasFormData(this OwinRequest request)
         {
             var contentType = request.ContentType();
             return (request.Method == "POST" && string.IsNullOrEmpty(contentType))
@@ -44,14 +44,14 @@
                    || contentType == "multipart/form-data";
         }
 
-        internal static bool HasParseableData(this OwinRequest request)
+        private static bool HasParseableData(this OwinRequest request)
         {
             var mediaType = request.MediaType();
             return mediaType == "application/x-www-form-urlencoded"
                    || mediaType == "multipart/form-data";
         }
 
-        internal static string MediaType(this OwinRequest request)
+        private static string MediaType(this OwinRequest request)
         {
             var contentType = request.ContentType();
             if (contentType == null)
@@ -60,9 +60,9 @@
             return delimiterPos < 0 ? contentType : contentType.Substring(0, delimiterPos);
         }
 
-        internal static string ContentType(this OwinRequest owinRequest)
+        private static string ContentType(this OwinRequest owinRequest)
         {
-            return owinRequest.GetHeader("Content-Type");
+            return owinRequest.Headers["Content-Type"];
         }
 
         public static T Get<T>(this IDictionary<string, object> dictionary, string key)
