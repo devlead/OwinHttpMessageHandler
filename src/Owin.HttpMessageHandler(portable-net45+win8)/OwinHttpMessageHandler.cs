@@ -66,40 +66,40 @@
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
-                       {OwinConstants.VersionKey, OwinConstants.OwinVersion},
-                       {OwinConstants.CallCancelledKey, cancellationToken},
-                       {OwinConstants.ServerRemoteIpAddressKey, "127.0.0.1"},
-                       {OwinConstants.ServerRemotePortKey, "1024"},
-                       {OwinConstants.ServerIsLocalKey, true},
-                       {OwinConstants.ServerLocalIpAddressKey, "127.0.0.1"},
-                       {OwinConstants.ServerLocalPortKey, request.RequestUri.Port.ToString()},
-                       {OwinConstants.ServerCapabilities, new List<IDictionary<string, object>>()},
-                       {OwinConstants.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
-                       {OwinConstants.RequestSchemeKey, request.RequestUri.Scheme},
-                       {OwinConstants.ResponseBodyKey, new MemoryStream()},
-                       {OwinConstants.RequestPathKey, request.RequestUri.AbsolutePath},
-                       {OwinConstants.RequestQueryStringKey, query},
-                       {OwinConstants.RequestBodyKey, requestBody},
-                       {OwinConstants.RequestHeadersKey, headers},
-                       {OwinConstants.RequestPathBaseKey, string.Empty},
-                       {OwinConstants.RequestProtocolKey, "HTTP/" + request.Version},
-                       {OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>()}
+                       {Constants.Owin.VersionKey, Constants.Owin.Version},
+                       {Constants.Owin.CallCancelledKey, cancellationToken},
+                       {Constants.Server.RemoteIpAddressKey, "127.0.0.1"},
+                       {Constants.Server.RemotePortKey, "1024"},
+                       {Constants.Server.IsLocalKey, true},
+                       {Constants.Server.LocalIpAddressKey, "127.0.0.1"},
+                       {Constants.Server.LocalPortKey, request.RequestUri.Port.ToString()},
+                       {Constants.Server.ServerCapabilities, new List<IDictionary<string, object>>()},
+                       {Constants.Owin.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
+                       {Constants.Owin.RequestSchemeKey, request.RequestUri.Scheme},
+                       {Constants.Owin.ResponseBodyKey, new MemoryStream()},
+                       {Constants.Owin.RequestPathKey, request.RequestUri.AbsolutePath},
+                       {Constants.Owin.RequestQueryStringKey, query},
+                       {Constants.Owin.RequestBodyKey, requestBody},
+                       {Constants.Owin.RequestHeadersKey, headers},
+                       {Constants.Owin.RequestPathBaseKey, string.Empty},
+                       {Constants.Owin.RequestProtocolKey, "HTTP/" + request.Version},
+                       {Constants.Owin.ResponseHeadersKey, new Dictionary<string, string[]>()}
                    };
         }
 
         public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env, HttpRequestMessage request,
                                                                 CookieContainer cookieContainer = null)
         {
-            var responseBody = Get<Stream>(env, OwinConstants.ResponseBodyKey);
+            var responseBody = Get<Stream>(env, Constants.Owin.ResponseBodyKey);
             responseBody.Position = 0;
             var response = new HttpResponseMessage
                            {
                                RequestMessage = request,
-                               StatusCode = (HttpStatusCode) Get<int>(env, OwinConstants.ResponseStatusCodeKey),
-                               ReasonPhrase = Get<string>(env, OwinConstants.ResponseReasonPhraseKey),
+                               StatusCode = (HttpStatusCode) Get<int>(env, Constants.Owin.ResponseStatusCodeKey),
+                               ReasonPhrase = Get<string>(env, Constants.Owin.ResponseReasonPhraseKey),
                                Content = new StreamContent(responseBody)
                            };
-            var headers = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeadersKey);
+            var headers = Get<IDictionary<string, string[]>>(env, Constants.Owin.ResponseHeadersKey);
             if (headers != null)
             {
                 foreach (var header in headers)
@@ -110,7 +110,7 @@
             }
             if (cookieContainer != null)
             {
-                IEnumerable<string> setCookieHeaders = Get<IDictionary<string, string[]>>(env, OwinConstants.ResponseHeadersKey)
+                IEnumerable<string> setCookieHeaders = Get<IDictionary<string, string[]>>(env, Constants.Owin.ResponseHeadersKey)
                     .Where(kvp => kvp.Key == "Set-Cookie")
                     .SelectMany(kvp => kvp.Value);
                 foreach (string setCookieHeader in setCookieHeaders)
@@ -131,43 +131,52 @@
             return default(T);
         }
 
-        public static class OwinConstants
+        public static class Constants
         {
-            public const string VersionKey = "owin.Version";
-            public const string OwinVersion = "1.0";
-            public const string CallCancelledKey = "owin.CallCancelled";
+            public static class Owin
+            {
+                public const string VersionKey = "owin.Version";
+                public const string Version = "1.0";
+                public const string CallCancelledKey = "owin.CallCancelled";
 
-            public const string RequestBodyKey = "owin.RequestBody";
-            public const string RequestHeadersKey = "owin.RequestHeaders";
-            public const string RequestSchemeKey = "owin.RequestScheme";
-            public const string RequestMethodKey = "owin.RequestMethod";
-            public const string RequestPathBaseKey = "owin.RequestPathBase";
-            public const string RequestPathKey = "owin.RequestPath";
-            public const string RequestQueryStringKey = "owin.RequestQueryString";
-            public const string RequestProtocolKey = "owin.RequestProtocol";
-            public const string HttpResponseProtocolKey = "owin.ResponseProtocol";
+                public const string RequestBodyKey = "owin.RequestBody";
+                public const string RequestHeadersKey = "owin.RequestHeaders";
+                public const string RequestSchemeKey = "owin.RequestScheme";
+                public const string RequestMethodKey = "owin.RequestMethod";
+                public const string RequestPathBaseKey = "owin.RequestPathBase";
+                public const string RequestPathKey = "owin.RequestPath";
+                public const string RequestQueryStringKey = "owin.RequestQueryString";
+                public const string RequestProtocolKey = "owin.RequestProtocol";
+                //public const string HttpResponseProtocolKey = "owin.ResponseProtocol";
 
-            public const string ResponseStatusCodeKey = "owin.ResponseStatusCode";
-            public const string ResponseReasonPhraseKey = "owin.ResponseReasonPhrase";
-            public const string ResponseHeadersKey = "owin.ResponseHeaders";
-            public const string ResponseBodyKey = "owin.ResponseBody";
+                public const string ResponseStatusCodeKey = "owin.ResponseStatusCode";
+                public const string ResponseReasonPhraseKey = "owin.ResponseReasonPhrase";
+                public const string ResponseHeadersKey = "owin.ResponseHeaders";
+                public const string ResponseBodyKey = "owin.ResponseBody";
+            }
 
-            public const string ServerRemoteIpAddressKey = "server.RemoteIpAddress";
-            public const string ServerRemotePortKey = "server.RemotePort";
-            public const string ServerLocalIpAddressKey = "server.LocalIpAddress";
-            public const string ServerLocalPortKey = "server.LocalPort";
-            public const string ServerIsLocalKey = "server.IsLocal";
-            public const string ServerOnSendingHeadersKey = "server.OnSendingHeaders";
-            public const string ServerUserKey = "server.User";
-            public const string ServerCapabilities = "server.Capabilities";
+            public static class Server 
+            {
+                public const string RemoteIpAddressKey = "server.RemoteIpAddress";
+                public const string RemotePortKey = "server.RemotePort";
+                public const string LocalIpAddressKey = "server.LocalIpAddress";
+                public const string LocalPortKey = "server.LocalPort";
+                public const string IsLocalKey = "server.IsLocal";
+//                public const string OnSendingHeadersKey = "server.OnSendingHeaders";
+//                public const string ServerUserKey = "server.User";
+                public const string ServerCapabilities = "server.Capabilities";
+            }
 
-            public const string HostHeader = "Host";
-            public const string WwwAuthenticateHeader = "WWW-Authenticate";
-            public const string ContentLengthHeader = "Content-Length";
-            public const string ContentTypeHeader = "Content-Type";
-            public const string TransferEncodingHeader = "Transfer-Encoding";
-            public const string KeepAliveHeader = "Keep-Alive";
-            public const string ConnectionHeader = "Connection";
+            public static class Headers
+            {
+                public const string Host = "Host";
+                public const string WwwAuthenticate = "WWW-Authenticate";
+                public const string ContentLength = "Content-Length";
+                public const string ContentType = "Content-Type";
+                public const string TransferEncoding = "Transfer-Encoding";
+                public const string KeepAlive = "Keep-Alive";
+                public const string Connection = "Connection";
+            }
         }
     }
 }

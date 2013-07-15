@@ -39,43 +39,43 @@
             [Fact]
             public void Should_have_Version()
             {
-                _sut[OwinHttpMessageHandler.OwinConstants.VersionKey].Should().NotBeNull();
+                _sut[OwinHttpMessageHandler.Constants.Owin.VersionKey].Should().NotBeNull();
             }
 
             [Fact]
             public void Should_have_CallCanceled()
             {
-                _sut[OwinHttpMessageHandler.OwinConstants.CallCancelledKey].Should().NotBeNull();
+                _sut[OwinHttpMessageHandler.Constants.Owin.CallCancelledKey].Should().NotBeNull();
             }
 
             [Fact]
             public void Should_have_ServerRemoteIpAddress()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerRemoteIpAddressKey).Should().Be("127.0.0.1");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Server.RemoteIpAddressKey).Should().Be("127.0.0.1");
             }
 
             [Fact]
             public void Should_have_ServerRemotePort()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerRemotePortKey).Should().Be("1024");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Server.RemotePortKey).Should().Be("1024");
             }
 
             [Fact]
             public void Should_have_ServerLocalIpAddress()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerLocalIpAddressKey).Should().Be("127.0.0.1");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Server.LocalIpAddressKey).Should().Be("127.0.0.1");
             }
 
             [Fact]
             public void Should_have_ServerLocalPort()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.ServerLocalPortKey).Should().Be("8080");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Server.LocalPortKey).Should().Be("8080");
             }
 
             [Fact]
             public void Should_have_empty_server_capabilities()
             {
-                _sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.OwinConstants.ServerCapabilities)
+                _sut.Get<IList<IDictionary<string, object>>>(OwinHttpMessageHandler.Constants.Server.ServerCapabilities)
                     .Should()
                     .BeEmpty();
             }
@@ -83,38 +83,38 @@
             [Fact]
             public void Should_have_IsLocal_true()
             {
-                _sut.Get<bool>(OwinHttpMessageHandler.OwinConstants.ServerIsLocalKey).Should().BeTrue();
+                _sut.Get<bool>(OwinHttpMessageHandler.Constants.Server.IsLocalKey).Should().BeTrue();
             }
 
             [Fact]
             public void Should_have_RequestMethod()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestMethodKey).Should().Be(_request.Method.ToString().ToUpperInvariant());
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestMethodKey).Should().Be(_request.Method.ToString().ToUpperInvariant());
             }
 
             [Fact]
             public void Should_have_RequestPath()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathKey).Should().Be(_request.RequestUri.AbsolutePath);
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestPathKey).Should().Be(_request.RequestUri.AbsolutePath);
             }
 
             [Fact]
             public void Should_have_RequestQueryString()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestQueryStringKey).Should().Be("x=y");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestQueryStringKey).Should().Be("x=y");
             }
 
             [Fact]
             public void Should_have_RequestBody()
             {
-                var stream = _sut.Get<Stream>(OwinHttpMessageHandler.OwinConstants.RequestBodyKey);
+                var stream = _sut.Get<Stream>(OwinHttpMessageHandler.Constants.Owin.RequestBodyKey);
                 new StreamReader(stream).ReadToEnd().Should().Be("foo");
             }
 
             [Fact]
             public void Should_have_RequestHeaders()
             {
-                    _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey)
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.RequestHeadersKey)
                         .Should()
                         .NotBeEmpty();
             }
@@ -122,7 +122,7 @@
             [Fact]
             public void Should_have_ResponseHeaders()
             {
-                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.ResponseHeadersKey)
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.ResponseHeadersKey)
                     .Should()
                     .NotBeNull();
             }
@@ -130,26 +130,26 @@
             [Fact]
             public void Should_have_ContentTypeHeader()
             {
-                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.OwinConstants.RequestHeadersKey)
-                    .Should().ContainKey(OwinHttpMessageHandler.OwinConstants.ContentTypeHeader);
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.RequestHeadersKey)
+                    .Should().ContainKey(OwinHttpMessageHandler.Constants.Headers.ContentType);
             }
 
             [Fact]
             public void Should_have_RequestPathBase()
             {
-               _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestPathBaseKey).Should().NotBeNull();
+               _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestPathBaseKey).Should().NotBeNull();
             }
 
             [Fact]
             public void Should_have_RequestProtocol()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestProtocolKey).Should().Be("HTTP/1.1");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestProtocolKey).Should().Be("HTTP/1.1");
             }
 
             [Fact]
             public void Should_have_RequestScheme()
             {
-                _sut.Get<string>(OwinHttpMessageHandler.OwinConstants.RequestSchemeKey).Should().Be("https");
+                _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestSchemeKey).Should().Be("https");
             }
         }
 
@@ -167,17 +167,17 @@
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
                 var env = new Dictionary<string, object>
                           {
-                              {OwinHttpMessageHandler.OwinConstants.ResponseBodyKey, new MemoryStream().Write("foo")},
+                              {OwinHttpMessageHandler.Constants.Owin.ResponseBodyKey, new MemoryStream().Write("foo")},
                               {
-                                  OwinHttpMessageHandler.OwinConstants.ResponseHeadersKey, new Dictionary<string, string[]>
+                                  OwinHttpMessageHandler.Constants.Owin.ResponseHeadersKey, new Dictionary<string, string[]>
                                                                 {
-                                                                    {OwinHttpMessageHandler.OwinConstants.ContentLengthHeader, new[] {"3"}},
-                                                                    {OwinHttpMessageHandler.OwinConstants.ConnectionHeader, new[] {"close"}}
+                                                                    {OwinHttpMessageHandler.Constants.Headers.ContentLength, new[] {"3"}},
+                                                                    {OwinHttpMessageHandler.Constants.Headers.Connection, new[] {"close"}}
                                                                 }
                               },
-                              {OwinHttpMessageHandler.OwinConstants.ResponseStatusCodeKey, 302},
-                              {OwinHttpMessageHandler.OwinConstants.ResponseReasonPhraseKey, "302 Found"},
-                              {OwinHttpMessageHandler.OwinConstants.RequestProtocolKey, "HTTP/1.1"}
+                              {OwinHttpMessageHandler.Constants.Owin.ResponseStatusCodeKey, 302},
+                              {OwinHttpMessageHandler.Constants.Owin.ResponseReasonPhraseKey, "302 Found"},
+                              {OwinHttpMessageHandler.Constants.Owin.RequestProtocolKey, "HTTP/1.1"}
                           };
                 _sut = OwinHttpMessageHandler.ToHttpResponseMessage(env, request);
             }
