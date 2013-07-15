@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Net;
     using System.Net.Http;
     using System.Net.Http.Headers;
@@ -132,6 +133,16 @@
             {
                 _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.RequestHeadersKey)
                     .Should().ContainKey(OwinHttpMessageHandler.Constants.Headers.ContentType);
+            }
+
+            [Fact]
+            public void Should_have_RequestHostHeader()
+            {
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.RequestHeadersKey)
+                    .Should().ContainKey(OwinHttpMessageHandler.Constants.Headers.Host);
+
+                _sut.Get<IDictionary<string, string[]>>(OwinHttpMessageHandler.Constants.Owin.RequestHeadersKey)[OwinHttpMessageHandler.Constants.Headers.Host]
+                    .Single().Should().Be("example.com:8080");
             }
 
             [Fact]

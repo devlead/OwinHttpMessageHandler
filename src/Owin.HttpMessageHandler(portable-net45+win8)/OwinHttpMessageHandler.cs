@@ -63,6 +63,17 @@
             }
             Dictionary<string, string[]> headers = httpHeaders.SelectMany(_ => _)
                                                               .ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
+            // Host header required for http 1.1
+            if (request.Version >= new Version(1, 1))
+            {
+                string host = request.RequestUri.Host;
+                if (request.RequestUri.Port != 80)
+                {
+                    host += ":" + request.RequestUri.Port;
+                }
+                headers.Add(Constants.Headers.Host, new[] {host});
+            }
+
             Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
