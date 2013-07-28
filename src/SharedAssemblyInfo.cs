@@ -5,7 +5,6 @@
 //  --------------------------------------------------------------------------------------------------------------------
 
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Damian Hickey")]
@@ -13,6 +12,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCopyright("Damian Hickey 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: ComVisible(false)]
 [assembly: AssemblyVersion("0.3.0.0")]
 [assembly: AssemblyFileVersion("0.3.0.0")]

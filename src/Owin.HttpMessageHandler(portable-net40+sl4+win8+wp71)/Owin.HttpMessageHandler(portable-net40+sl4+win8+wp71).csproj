@@ -47,6 +47,9 @@
     <Compile Include="..\Owin.HttpMessageHandler%28portable-net45+win8%29\OwinHttpMessageHandler.cs">
       <Link>OwinHttpMessageHandler.cs</Link>
     </Compile>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
