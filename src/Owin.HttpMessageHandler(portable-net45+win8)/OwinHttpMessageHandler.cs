@@ -44,9 +44,20 @@
                 }
             }
             IDictionary<string, object> env = await ToEnvironmentAsync(request, cancellationToken);
+            Action sendingHeaders = () => { };
+            env.Add(Constants.Server.OnSendingHeadersKey, new Action<Action<object>, object>((callback, state) =>
+            {
+                var previous = sendingHeaders;
+                sendingHeaders = () =>
+                {
+                    previous();
+                    callback(state);
+                };
+            }));
             _beforeInvoke(env);
             await _appFunc(env);
             _afterInvoke(env);
+            sendingHeaders();
             return ToHttpResponseMessage(env, request, UseCookies ? _cookieContainer : null);
         }
 
@@ -173,7 +184,7 @@
                 public const string LocalIpAddressKey = "server.LocalIpAddress";
                 public const string LocalPortKey = "server.LocalPort";
                 public const string IsLocalKey = "server.IsLocal";
-//                public const string OnSendingHeadersKey = "server.OnSendingHeaders";
+                public const string OnSendingHeadersKey = "server.OnSendingHeaders";
 //                public const string ServerUserKey = "server.User";
                 public const string ServerCapabilities = "server.Capabilities";
             }

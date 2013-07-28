@@ -237,13 +237,14 @@
         }
 
         private readonly HttpClient _sut;
+        private Action<IDictionary<string, object>> _beforeInvoke = _ => { };
 
         public OwinHttpMessageHandlerTests()
         {
             var appBuilder = new AppBuilderFactory().Create();
             new Startup().Configuration(appBuilder);
             var appFunc = (Func<IDictionary<string, object>, Task>)appBuilder.Build(typeof(Func<IDictionary<string, object>, Task>));
-            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc) { UseCookies = true });
+            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc, beforeInvoke: env => _beforeInvoke(env)) { UseCookies = true });
         }
 
         [Fact]
@@ -263,6 +264,19 @@
         public async Task Should_get_status_NotFound()
         {
             (await _sut.GetAsync("http://sample.com/NotFound")).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        }
+
+        [Fact]
+        public async Task Should_call_OnSendingHeaders()
+        {
+            bool onSendingHeadersCalled = false;
+            _beforeInvoke = env =>
+            {
+                var action = env.Get<Action<Action<object>, object>>(OwinHttpMessageHandler.Constants.Server.OnSendingHeadersKey);
+                action(_ => onSendingHeadersCalled = true, null);
+            };
+            await _sut.GetAsync("http://sample.com/OK");
+            onSendingHeadersCalled.Should().BeTrue();
         }
 
         [Fact]
