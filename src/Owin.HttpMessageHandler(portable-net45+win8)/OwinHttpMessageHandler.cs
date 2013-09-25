@@ -114,10 +114,11 @@
         {
             var responseBody = Get<Stream>(env, Constants.Owin.ResponseBodyKey);
             responseBody.Position = 0;
+            var statusCode = Get<int>(env, Constants.Owin.ResponseStatusCodeKey);
             var response = new HttpResponseMessage
                            {
                                RequestMessage = request,
-                               StatusCode = (HttpStatusCode) Get<int>(env, Constants.Owin.ResponseStatusCodeKey),
+                               StatusCode = statusCode == 0 ? HttpStatusCode.OK : (HttpStatusCode)statusCode,
                                ReasonPhrase = Get<string>(env, Constants.Owin.ResponseReasonPhraseKey),
                                Content = new StreamContent(responseBody)
                            };
