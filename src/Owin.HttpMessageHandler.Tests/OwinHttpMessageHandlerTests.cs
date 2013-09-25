@@ -21,7 +21,7 @@
         public class ToEnvironmentTests
         {
             private readonly HttpRequestMessage _request;
-            private readonly IDictionary<string, object> _sut;
+            private IDictionary<string, object> _sut;
 
             public ToEnvironmentTests()
             {
@@ -30,6 +30,11 @@
                 {
                     Content = content
                 };
+                InitSut();
+            }
+
+            private void InitSut()
+            {
                 _request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
                 Task<IDictionary<string, object>> environmentAsync = OwinHttpMessageHandler.ToEnvironmentAsync(
                     _request, new CancellationToken());
@@ -161,6 +166,15 @@
             public void Should_have_RequestScheme()
             {
                 _sut.Get<string>(OwinHttpMessageHandler.Constants.Owin.RequestSchemeKey).Should().Be("https");
+            }
+
+            [Fact]
+            public void When_content_is_null_then_should_have_NullStream_request_body()
+            {
+                _request.Content = null;
+                InitSut();
+                var stream = _sut.Get<Stream>(OwinHttpMessageHandler.Constants.Owin.RequestBodyKey);
+                stream.Should().Be(Stream.Null);
             }
         }
 

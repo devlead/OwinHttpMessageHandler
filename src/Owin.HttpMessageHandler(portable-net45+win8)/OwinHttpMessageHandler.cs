@@ -85,7 +85,7 @@
                 headers.Add(Constants.Headers.Host, new[] {host});
             }
 
-            Stream requestBody = request.Content == null ? null : await request.Content.ReadAsStreamAsync();
+            Stream requestBody = request.Content == null ? Stream.Null : await request.Content.ReadAsStreamAsync();
             return new Dictionary<string, object>
                    {
                        {Constants.Owin.VersionKey, Constants.Owin.Version},
