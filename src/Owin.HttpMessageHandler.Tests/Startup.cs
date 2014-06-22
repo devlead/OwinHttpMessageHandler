@@ -30,7 +30,7 @@
 
             public override Task Invoke(IOwinContext context)
             {
-                _responders[context.Request.Path](context);
+                _responders[context.Request.Path.Value](context);
                 return Task.FromResult((object)null);
             }
         }
