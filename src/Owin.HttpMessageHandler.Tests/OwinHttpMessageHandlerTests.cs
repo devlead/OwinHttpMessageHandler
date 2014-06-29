@@ -1,4 +1,6 @@
-﻿namespace Owin.HttpMessageHandler
+﻿using Microsoft.Owin;
+
+namespace Owin.HttpMessageHandler
 {
     using System;
     using System.Collections.Generic;
@@ -10,9 +12,14 @@
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Microsoft.Owin.Hosting.Builder;
     using Owin;
     using Xunit;
+
+    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using MidFunc = System.Func<
+        System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>,
+        System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>
+        >;
 
     // ReSharper disable InconsistentNaming
 
@@ -277,20 +284,36 @@
         }
 
         private readonly HttpClient _sut;
-        private Action<IDictionary<string, object>> _beforeInvoke = _ => { };
+        private bool _onSendingHeadersCalled;
 
         public OwinHttpMessageHandlerTests()
         {
-            var appBuilder = new AppBuilderFactory().Create();
-            new Startup().Configuration(appBuilder);
-            var appFunc = (Func<IDictionary<string, object>, Task>)appBuilder.Build(typeof(Func<IDictionary<string, object>, Task>));
-            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc, beforeInvoke: env => _beforeInvoke(env)) { UseCookies = true });
+            var _responders = new Dictionary<string, Action<IOwinContext>>
+            {
+                {"/OK", context => context.Response.StatusCode = 200},
+                {"/NotFound", context => context.Response.StatusCode = 404},
+                {"/greeting", context =>
+                    {
+                        var form = context.Request.ReadFormAsync().Result;
+                        context.Response.Write("Hello " + form["Name"]);
+                    }
+                }
+            };
+            AppFunc appFunc = env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.OnSendingHeaders(_ => _onSendingHeadersCalled = true, null);
+                _responders[context.Request.Path.Value](context);
+                return Task.FromResult((object) null);
+            };
+
+            _sut = new HttpClient(new OwinHttpMessageHandler(appFunc) { UseCookies = true });
         }
 
         [Fact]
         public void When_appfunc_paramater_is_null_Then_should_throw()
         {
-            Action act = () => { new OwinHttpMessageHandler(null); };
+            Action act = () => { var handler = new OwinHttpMessageHandler(null); };
             act.ShouldThrow<ArgumentNullException>();
         }
 
@@ -309,14 +332,8 @@
         [Fact]
         public async Task Should_call_OnSendingHeaders()
         {
-            bool onSendingHeadersCalled = false;
-            _beforeInvoke = env =>
-            {
-                var action = env.Get<Action<Action<object>, object>>(OwinHttpMessageHandler.Constants.Server.OnSendingHeadersKey);
-                action(_ => onSendingHeadersCalled = true, null);
-            };
             await _sut.GetAsync("http://sample.com/OK");
-            onSendingHeadersCalled.Should().BeTrue();
+            _onSendingHeadersCalled.Should().BeTrue();
         }
 
         [Fact]

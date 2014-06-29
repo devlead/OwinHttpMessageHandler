@@ -12,22 +12,16 @@
 
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
-        private readonly Action<IDictionary<string, object>> _afterInvoke;
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
-        private readonly Action<IDictionary<string, object>> _beforeInvoke;
         private readonly CookieContainer _cookieContainer = new CookieContainer();
 
-        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc,
-                                      Action<IDictionary<string, object>> beforeInvoke = null,
-                                      Action<IDictionary<string, object>> afterInvoke = null)
+        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc)
         {
             if (appFunc == null)
             {
                 throw new ArgumentNullException("appFunc");
             }
             _appFunc = appFunc;
-            _beforeInvoke = beforeInvoke ?? (env => { });
-            _afterInvoke = afterInvoke ?? (env => { });
         }
 
         public bool UseCookies { get; set; }
@@ -54,9 +48,7 @@
                     callback(state);
                 };
             }));
-            _beforeInvoke(env);
             await _appFunc(env);
-            _afterInvoke(env);
             sendingHeaders();
             return ToHttpResponseMessage(env, request, UseCookies ? _cookieContainer : null);
         }
