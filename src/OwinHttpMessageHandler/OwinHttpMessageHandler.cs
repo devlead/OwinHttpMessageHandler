@@ -25,8 +25,7 @@
 
         public bool UseCookies { get; set; }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-                                                                     CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             if (UseCookies)
             {
@@ -52,8 +51,7 @@
             return ToHttpResponseMessage(env, request, UseCookies ? _cookieContainer : null);
         }
 
-        public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request,
-                                                                                 CancellationToken cancellationToken)
+        public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string query = string.IsNullOrWhiteSpace(request.RequestUri.Query)
                                ? string.Empty

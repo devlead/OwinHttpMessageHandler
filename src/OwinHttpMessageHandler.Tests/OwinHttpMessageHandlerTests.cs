@@ -12,6 +12,8 @@
     using Microsoft.Owin;
     using Xunit;
 
+    using AppFunc = System.Func<Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+
     // ReSharper disable InconsistentNaming
 
     public class OwinHttpMessageHandlerTests
@@ -290,7 +292,7 @@
                     }
                 }
             };
-            Func<IDictionary<string, object>, Task> appFunc = env =>
+            AppFunc appFunc = env =>
             {
                 var context = new OwinContext(env);
                 context.Response.OnSendingHeaders(_ => _onSendingHeadersCalled = true, null);
