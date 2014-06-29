@@ -1,11 +1,10 @@
-﻿namespace Owin
+﻿namespace System.Net.Http
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
@@ -162,7 +161,6 @@
                 public const string RequestPathKey = "owin.RequestPath";
                 public const string RequestQueryStringKey = "owin.RequestQueryString";
                 public const string RequestProtocolKey = "owin.RequestProtocol";
-                //public const string HttpResponseProtocolKey = "owin.ResponseProtocol";
 
                 public const string ResponseStatusCodeKey = "owin.ResponseStatusCode";
                 public const string ResponseReasonPhraseKey = "owin.ResponseReasonPhrase";
@@ -178,18 +176,14 @@
                 public const string LocalPortKey = "server.LocalPort";
                 public const string IsLocalKey = "server.IsLocal";
                 public const string OnSendingHeadersKey = "server.OnSendingHeaders";
-//                public const string ServerUserKey = "server.User";
                 public const string ServerCapabilities = "server.Capabilities";
             }
 
             public static class Headers
             {
                 public const string Host = "Host";
-                public const string WwwAuthenticate = "WWW-Authenticate";
                 public const string ContentLength = "Content-Length";
                 public const string ContentType = "Content-Type";
-                public const string TransferEncoding = "Transfer-Encoding";
-                public const string KeepAlive = "Keep-Alive";
                 public const string Connection = "Connection";
             }
         }

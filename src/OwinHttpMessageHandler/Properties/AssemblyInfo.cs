@@ -1,4 +1,4 @@
 ﻿using System.Reflection;
 
-[assembly: AssemblyTitle("Owin.HttpMessageHandler")]
+[assembly: AssemblyTitle("OwinHttpMessageHandler")]
 [assembly: AssemblyDescription("")]

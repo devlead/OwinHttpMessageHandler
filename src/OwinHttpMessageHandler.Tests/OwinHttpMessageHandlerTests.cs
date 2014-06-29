@@ -1,25 +1,16 @@
-﻿using Microsoft.Owin;
-
-namespace Owin.HttpMessageHandler
+﻿namespace System.Net.Http
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Http;
     using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Owin;
+    using Microsoft.Owin;
     using Xunit;
-
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
-    using MidFunc = System.Func<
-        System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>,
-        System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>
-        >;
 
     // ReSharper disable InconsistentNaming
 
@@ -299,7 +290,7 @@ namespace Owin.HttpMessageHandler
                     }
                 }
             };
-            AppFunc appFunc = env =>
+            Func<IDictionary<string, object>, Task> appFunc = env =>
             {
                 var context = new OwinContext(env);
                 context.Response.OnSendingHeaders(_ => _onSendingHeadersCalled = true, null);
