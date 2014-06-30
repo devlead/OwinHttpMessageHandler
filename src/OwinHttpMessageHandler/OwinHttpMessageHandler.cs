@@ -5,9 +5,9 @@
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net.Http.Headers;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Owin;
 
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
@@ -27,6 +27,10 @@
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request == null)
+            {
+                throw new ArgumentNullException("request");
+            }
             if (UseCookies)
             {
                 string cookieHeader = _cookieContainer.GetCookieHeader(request.RequestUri);
@@ -35,154 +39,160 @@
                     request.Headers.Add("Cookie", cookieHeader);
                 }
             }
-            IDictionary<string, object> env = await ToEnvironmentAsync(request, cancellationToken);
-            Action sendingHeaders = () => { };
-            env.Add(Constants.Server.OnSendingHeadersKey, new Action<Action<object>, object>((callback, state) =>
+
+            var state = new RequestState(request, cancellationToken);
+            HttpContent requestContent = request.Content ?? new StreamContent(Stream.Null);
+            Stream body = await requestContent.ReadAsStreamAsync();
+            if (body.CanSeek)
             {
-                var previous = sendingHeaders;
-                sendingHeaders = () =>
+                // This body may have been consumed before, rewind it.
+                body.Seek(0, SeekOrigin.Begin);
+            }
+            state.OwinContext.Request.Body = body;
+            CancellationTokenRegistration registration = cancellationToken.Register(state.Abort);
+
+            // Async offload, don't let the test code block the caller.
+            Task offload = Task.Run(async () =>
+            {
+                try
                 {
-                    previous();
-                    callback(state);
+                    await _appFunc(state.Environment);
+                    state.CompleteResponse();
+                }
+                catch (Exception ex)
+                {
+                    state.Abort(ex);
+                }
+                finally
+                {
+                    registration.Dispose();
+                    state.Dispose();
+                }
+            }, cancellationToken);
+
+            return await state.ResponseTask;
+        }
+
+        private class RequestState : IDisposable
+        {
+            private readonly HttpRequestMessage _request;
+            private Action _sendingHeaders;
+            private readonly TaskCompletionSource<HttpResponseMessage> _responseTcs;
+            private readonly ResponseStream _responseStream;
+
+            internal RequestState(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                _request = request;
+                _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
+                _sendingHeaders = () => { };
+
+                if (request.RequestUri.IsDefaultPort)
+                {
+                    request.Headers.Host = request.RequestUri.Host;
+                }
+                else
+                {
+                    request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
+                }
+
+                OwinContext = new OwinContext();
+                OwinContext.Set("owin.Version", "1.0");
+                IOwinRequest owinRequest = OwinContext.Request;
+                owinRequest.Protocol = "HTTP/" + request.Version.ToString(2);
+                owinRequest.Scheme = request.RequestUri.Scheme;
+                owinRequest.Method = request.Method.ToString();
+                owinRequest.Path = PathString.FromUriComponent(request.RequestUri);
+                owinRequest.PathBase = PathString.Empty;
+                owinRequest.QueryString = QueryString.FromUriComponent(request.RequestUri);
+                owinRequest.CallCancelled = cancellationToken;
+                owinRequest.Set<Action<Action<object>, object>>("server.OnSendingHeaders", (callback, state) =>
+                {
+                    var prior = _sendingHeaders;
+                    _sendingHeaders = () =>
+                    {
+                        prior();
+                        callback(state);
+                    };
+                });
+
+                foreach (var header in request.Headers)
+                {
+                    owinRequest.Headers.AppendValues(header.Key, header.Value.ToArray());
+                }
+                HttpContent requestContent = request.Content;
+                if (requestContent != null)
+                {
+                    foreach (var header in request.Content.Headers)
+                    {
+                        owinRequest.Headers.AppendValues(header.Key, header.Value.ToArray());
+                    }
+                }
+
+                _responseStream = new ResponseStream(CompleteResponse);
+                OwinContext.Response.Body = _responseStream;
+                OwinContext.Response.StatusCode = 200;
+            }
+
+            public IOwinContext OwinContext { get; private set; }
+
+            public IDictionary<string, object> Environment
+            {
+                get { return OwinContext.Environment; }
+            }
+
+            public Task<HttpResponseMessage> ResponseTask
+            {
+                get { return _responseTcs.Task; }
+            }
+
+            internal void CompleteResponse()
+            {
+                if (!_responseTcs.Task.IsCompleted)
+                {
+                    HttpResponseMessage response = GenerateResponse();
+                    // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
+                    Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
+                }
+            }
+
+            internal HttpResponseMessage GenerateResponse()
+            {
+                _sendingHeaders();
+
+                var response = new HttpResponseMessage
+                {
+                    StatusCode = (HttpStatusCode) OwinContext.Response.StatusCode,
+                    ReasonPhrase = OwinContext.Response.ReasonPhrase,
+                    RequestMessage = _request,
+                    Content = new StreamContent(_responseStream)
                 };
-            }));
-            await _appFunc(env);
-            sendingHeaders();
-            return ToHttpResponseMessage(env, request, UseCookies ? _cookieContainer : null);
-        }
+                // response.Version = owinResponse.Protocol;
 
-        public static async Task<IDictionary<string, object>> ToEnvironmentAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            string query = string.IsNullOrWhiteSpace(request.RequestUri.Query)
-                               ? string.Empty
-                               : request.RequestUri.Query.Substring(1);
-            var httpHeaders = new List<HttpHeaders> {request.Headers};
-            if (request.Content != null)
-            {
-                httpHeaders.Add(request.Content.Headers);
-            }
-            Dictionary<string, string[]> headers = httpHeaders.SelectMany(_ => _)
-                                                              .ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
-            // Host header required for http 1.1
-            if (request.Version >= new Version(1, 1))
-            {
-                string host = request.RequestUri.Host;
-                if (request.RequestUri.Port != 80)
+                foreach (var header in OwinContext.Response.Headers)
                 {
-                    host += ":" + request.RequestUri.Port;
+                    if (!response.Headers.TryAddWithoutValidation(header.Key, header.Value))
+                    {
+                        bool success = response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                    }
                 }
-                headers.Add(Constants.Headers.Host, new[] {host});
+                return response;
             }
 
-            Stream requestBody = request.Content == null ? Stream.Null : await request.Content.ReadAsStreamAsync();
-            return new Dictionary<string, object>
-                   {
-                       {Constants.Owin.VersionKey, Constants.Owin.Version},
-                       {Constants.Owin.CallCancelledKey, cancellationToken},
-                       {Constants.Server.RemoteIpAddressKey, "127.0.0.1"},
-                       {Constants.Server.RemotePortKey, "1024"},
-                       {Constants.Server.IsLocalKey, true},
-                       {Constants.Server.LocalIpAddressKey, "127.0.0.1"},
-                       {Constants.Server.LocalPortKey, request.RequestUri.Port.ToString()},
-                       {Constants.Server.ServerCapabilities, new List<IDictionary<string, object>>()},
-                       {Constants.Owin.RequestMethodKey, request.Method.ToString().ToUpperInvariant()},
-                       {Constants.Owin.RequestSchemeKey, request.RequestUri.Scheme},
-                       {Constants.Owin.ResponseBodyKey, new MemoryStream()},
-                       {Constants.Owin.RequestPathKey, request.RequestUri.AbsolutePath},
-                       {Constants.Owin.RequestQueryStringKey, query},
-                       {Constants.Owin.RequestBodyKey, requestBody},
-                       {Constants.Owin.RequestHeadersKey, headers},
-                       {Constants.Owin.RequestPathBaseKey, string.Empty},
-                       {Constants.Owin.RequestProtocolKey, "HTTP/" + request.Version},
-                       {Constants.Owin.ResponseHeadersKey, new Dictionary<string, string[]>()}
-                   };
-        }
-
-        public static HttpResponseMessage ToHttpResponseMessage(IDictionary<string, object> env, HttpRequestMessage request,
-                                                                CookieContainer cookieContainer = null)
-        {
-            var responseBody = Get<Stream>(env, Constants.Owin.ResponseBodyKey);
-            responseBody.Position = 0;
-            var statusCode = Get<int>(env, Constants.Owin.ResponseStatusCodeKey);
-            var response = new HttpResponseMessage
-                           {
-                               RequestMessage = request,
-                               StatusCode = statusCode == 0 ? HttpStatusCode.OK : (HttpStatusCode)statusCode,
-                               ReasonPhrase = Get<string>(env, Constants.Owin.ResponseReasonPhraseKey),
-                               Content = new StreamContent(responseBody)
-                           };
-            var headers = Get<IDictionary<string, string[]>>(env, Constants.Owin.ResponseHeadersKey);
-            if (headers != null)
+            internal void Abort()
             {
-                foreach (var header in headers)
-                {
-                    response.Content.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                    response.Headers.TryAddWithoutValidation(header.Key, header.Value);
-                }
-            }
-            if (cookieContainer != null)
-            {
-                IEnumerable<string> setCookieHeaders = Get<IDictionary<string, string[]>>(env, Constants.Owin.ResponseHeadersKey)
-                    .Where(kvp => kvp.Key == "Set-Cookie")
-                    .SelectMany(kvp => kvp.Value);
-                foreach (string setCookieHeader in setCookieHeaders)
-                {
-                    cookieContainer.SetCookies(request.RequestUri, setCookieHeader);
-                }
-            }
-            return response;
-        }
-
-        private static T Get<T>(IDictionary<string, object> env, string key)
-        {
-            object value;
-            if (env.TryGetValue(key, out value))
-            {
-                return (T) value;
-            }
-            return default(T);
-        }
-
-        public static class Constants
-        {
-            public static class Owin
-            {
-                public const string VersionKey = "owin.Version";
-                public const string Version = "1.0";
-                public const string CallCancelledKey = "owin.CallCancelled";
-
-                public const string RequestBodyKey = "owin.RequestBody";
-                public const string RequestHeadersKey = "owin.RequestHeaders";
-                public const string RequestSchemeKey = "owin.RequestScheme";
-                public const string RequestMethodKey = "owin.RequestMethod";
-                public const string RequestPathBaseKey = "owin.RequestPathBase";
-                public const string RequestPathKey = "owin.RequestPath";
-                public const string RequestQueryStringKey = "owin.RequestQueryString";
-                public const string RequestProtocolKey = "owin.RequestProtocol";
-
-                public const string ResponseStatusCodeKey = "owin.ResponseStatusCode";
-                public const string ResponseReasonPhraseKey = "owin.ResponseReasonPhrase";
-                public const string ResponseHeadersKey = "owin.ResponseHeaders";
-                public const string ResponseBodyKey = "owin.ResponseBody";
+                Abort(new OperationCanceledException());
             }
 
-            public static class Server 
+            internal void Abort(Exception exception)
             {
-                public const string RemoteIpAddressKey = "server.RemoteIpAddress";
-                public const string RemotePortKey = "server.RemotePort";
-                public const string LocalIpAddressKey = "server.LocalIpAddress";
-                public const string LocalPortKey = "server.LocalPort";
-                public const string IsLocalKey = "server.IsLocal";
-                public const string OnSendingHeadersKey = "server.OnSendingHeaders";
-                public const string ServerCapabilities = "server.Capabilities";
+                _responseStream.Abort(exception);
+                _responseTcs.TrySetException(exception);
             }
 
-            public static class Headers
+            public void Dispose()
             {
-                public const string Host = "Host";
-                public const string ContentLength = "Content-Length";
-                public const string ContentType = "Content-Type";
-                public const string Connection = "Connection";
+                _responseStream.Dispose();
+                // Do not dispose the request, that will be disposed by the caller.
             }
         }
     }
