@@ -1,5 +1,5 @@
 properties { 
-	$projectName = "Owin.HttpMessageHandler"
+	$projectName = "OwinHttpMessageHandler"
 	$buildNumber = 0
 	$rootDir  = Resolve-Path .\
 	$buildOutputDir = "$rootDir\build"
@@ -7,9 +7,10 @@ properties {
 	$srcDir = "$rootDir\src"
 	$solutionFilePath = "$srcDir\$projectName.sln"
 	$assemblyInfoFilePath = "$srcDir\SharedAssemblyInfo.cs"
+	$ilmerge_path = "$srcDir\packages\ILMerge.2.13.0307\ILMerge.exe"
 }
 
-task default -depends Clean, UpdateVersion, RunTests, CopyBuildOutput, CreateNuGetPackages
+task default -depends Clean, UpdateVersion, RunTests, ILMerge, CreateNuGetPackages
 
 task Clean {
 	Remove-Item $buildOutputDir -Force -Recurse -ErrorAction SilentlyContinue
@@ -27,9 +28,24 @@ task Compile {
 	exec { msbuild /nologo /verbosity:quiet $solutionFilePath /p:Configuration=Release }
 }
 
+task ILMerge -depends Compile {
+	$dllDir = "$srcDir\OwinHttpMessageHandler\bin\Release"
+	$input_dlls = "$dllDir\OwinHttpMessageHandler.dll"
+	Get-ChildItem -Path $dllDir -Filter *.dll |
+		foreach-object {
+			if ("$_" -ne "OwinHttpMessageHandler.dll") {
+				$input_dlls = "$input_dlls $dllDir\$_"
+			}
+	}
+
+	$input_dlls
+
+	Invoke-Expression "$ilmerge_path /targetplatform:v4 /internalize /allowDup /target:library /out:$buildOutputDir\OwinHttpMessageHandler.dll $input_dlls"
+}
+
 task RunTests -depends Compile {
-	$xunitRunner = "$rootDir\tools\xunit.runners.1.9.1\xunit.console.clr4.exe"
-	Get-ChildItem . -Recurse -Include *Tests.csproj, Tests.*.csproj | % {
+	$xunitRunner = "$srcDir\packages\xunit.runners.1.9.2\tools\xunit.console.clr4.exe"
+	gci . -Recurse -Include *Tests.csproj, Tests.*.csproj | % {
 		$project = $_.BaseName
 		if(!(Test-Path $reportsDir\xUnit\$project)){
 			New-Item $reportsDir\xUnit\$project -Type Directory
@@ -37,19 +53,12 @@ task RunTests -depends Compile {
         .$xunitRunner "$srcDir\$project\bin\Release\$project.dll" /html "$reportsDir\xUnit\$project\index.html"
     }
 }
-task CopyBuildOutput -depends Compile {
-	New-Item "$buildOutputDir\bin\portable-net45+win8\" -Type Directory
-	New-Item "$buildOutputDir\bin\portable-net40+sl4+win8+wp71\" -Type Directory
-	New-Item "$buildOutputDir\Source" -Type Directory
-	gci "$srcDir\Owin.HttpMessageHandler(portable-net45+win8)\bin\Release" |% { Copy-Item $_.FullName "$buildOutputDir\bin\portable-net45+win8\" }
-	gci "$srcDir\Owin.HttpMessageHandler(portable-net40+sl4+win8+wp71)\bin\Release" |% { Copy-Item $_.FullName "$buildOutputDir\bin\portable-net40+sl4+win8+wp71\"}
-	gci "$srcDir\Owin.HttpMessageHandler(portable-net45+win8)\*.cs" |% { Copy-Item $_ "$buildOutputDir\Source"  }
-	gci $buildOutputDir\Source\*.cs |%  { (gc $_) -replace "public", "internal" | sc -path $_ }
-}
 
-task CreateNuGetPackages -depends CopyBuildOutput {
-	$packageVersion = Get-Version $assemblyInfoFilePath
-	copy-item $srcDir\*.nuspec $buildOutputDir
-	exec { .$srcDir\.nuget\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
-	exec { .$srcDir\.nuget\nuget.exe pack $buildOutputDir\Owin.HttpMessageHandler.Sources.nuspec -BasePath .\ -o $buildOutputDir -version $packageVersion }
+task CreateNuGetPackages -depends Compile {
+	$versionString = Get-Version $assemblyInfoFilePath
+	$version = New-Object Version $versionString
+	$packageVersion = $version.Major.ToString() + "." + $version.Minor.ToString() + "." + $version.Build.ToString() + "-build" + $buildNumber.ToString().PadLeft(5,'0')
+	gci $srcDir -Recurse -Include *.nuspec | % {
+		exec { .$srcDir\.nuget\nuget.exe pack $_ -o $buildOutputDir -version $packageVersion }
+	}
 }
