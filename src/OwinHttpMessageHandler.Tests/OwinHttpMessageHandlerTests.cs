@@ -2,11 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
     using System.Net;
-    using System.Net.Http.Headers;
-    using System.Threading;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Microsoft.Owin;
@@ -80,6 +76,56 @@
                                                              new KeyValuePair<string, string>("Name", "Damian")
                                                          }));
             (await response.Content.ReadAsStringAsync()).Should().Be("Hello Damian");
+        }
+
+        [Fact]
+        public async Task When_changing_use_cookies_after_initial_operation_then_should_throw()
+        {
+            var handler = new OwinHttpMessageHandler(AppFuncHelpers.NoopAppFunc);
+            using (var client = new HttpClient(handler))
+            {
+                await client.GetAsync("http://localhost/");
+            }
+
+            Action act = () => { handler.UseCookies = true; };
+
+            act.ShouldThrow<InvalidOperationException>();
+        }
+
+        [Fact]
+        public void When_changing_use_cookies_after_disposing_then_should_throw()
+        {
+            var handler = new OwinHttpMessageHandler(_ => Task.FromResult(0));
+            handler.Dispose();
+
+            Action act = () => { handler.UseCookies = true; };
+
+            act.ShouldThrow<InvalidOperationException>();
+        }
+
+        [Fact]
+        public async Task When_changing_cookie_container_after_initial_operation_then_should_throw()
+        {
+            var handler = new OwinHttpMessageHandler(AppFuncHelpers.NoopAppFunc);
+            using (var client = new HttpClient(handler))
+            {
+                await client.GetAsync("http://localhost/");
+            }
+
+            Action act = () => { handler.CookieContainer = new CookieContainer(); };
+
+            act.ShouldThrow<InvalidOperationException>();
+        }
+
+        [Fact]
+        public void When_changing_cookie_container_after_disposing_then_then_should_throw()
+        {
+            var handler = new OwinHttpMessageHandler(AppFuncHelpers.NoopAppFunc);
+            handler.Dispose();
+
+            Action act = () => { handler.CookieContainer = new CookieContainer(); };
+
+            act.ShouldThrow<InvalidOperationException>();
         }
     }
     // ReSharper restore InconsistentNaming

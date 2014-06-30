@@ -59,6 +59,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AppFunc.cs" />
+    <Compile Include="CookieTests.cs" />
     <Compile Include="OwinHttpMessageHandlerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StreamingTests.cs" />

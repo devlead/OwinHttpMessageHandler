@@ -9,11 +9,22 @@
     using System.Threading.Tasks;
     using Microsoft.Owin;
 
+    /// <summary>
+    /// Represents an HttpMessageHanlder that can invoke a request directly against an OWIN pipeline (an 'AppFunc').
+    /// </summary>
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
         private readonly Func<IDictionary<string, object>, Task> _appFunc;
-        private readonly CookieContainer _cookieContainer = new CookieContainer();
+        private CookieContainer _cookieContainer = new CookieContainer();
+        private bool _useCookies;
+        private bool _operationStarted; //popsicle immutability
+        private bool _disposed;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
+        /// </summary>
+        /// <param name="appFunc">The application function.</param>
+        /// <exception cref="System.ArgumentNullException">appFunc</exception>
         public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc)
         {
             if (appFunc == null)
@@ -23,7 +34,43 @@
             _appFunc = appFunc;
         }
 
-        public bool UseCookies { get; set; }
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _disposed = true;
+        }
+
+        /// <summary>
+        ///     Gets or sets a value that indicates whether the handler uses the  <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property  to store server cookies and uses these cookies when sending requests.
+        /// </summary>
+        /// <returns>
+        ///     Returns <see cref="T:System.Boolean"/>.true if the if the handler supports uses the  <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property  to store server cookies and uses these cookies when sending requests; otherwise false. The default value is true.
+        /// </returns>
+        public bool UseCookies
+        {
+            get { return _useCookies; }
+            set
+            {
+                CheckDisposedOrStarted();
+                _useCookies = value;
+            }
+        }
+
+        /// <summary>
+        ///     Gets or sets the cookie container used to store server cookies by the handler.
+        /// </summary>
+        /// <returns>
+        ///     Returns <see cref="T:System.Net.CookieContainer"/>.The cookie container used to store server cookies by the handler.
+        /// </returns>
+        public CookieContainer CookieContainer 
+        {
+            get { return _cookieContainer; }
+            set
+            {
+                CheckDisposedOrStarted();
+                _cookieContainer = value;
+            }
+        }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -31,7 +78,9 @@
             {
                 throw new ArgumentNullException("request");
             }
-            if (UseCookies)
+            _operationStarted = true;
+
+            if (_useCookies)
             {
                 string cookieHeader = _cookieContainer.GetCookieHeader(request.RequestUri);
                 if (!string.IsNullOrEmpty(cookieHeader))
@@ -70,7 +119,30 @@
                 }
             }, cancellationToken);
 
-            return await state.ResponseTask;
+            HttpResponseMessage response = await state.ResponseTask;
+            if (_useCookies && response.Headers.Contains("Set-Cookie"))
+            {
+                string cookieHeader = string.Join(",", response.Headers.GetValues("Set-Cookie"));
+                _cookieContainer.SetCookies(request.RequestUri, cookieHeader);
+            }
+            return response;
+        }
+
+        private void CheckDisposedOrStarted()
+        {
+            CheckDisposed();
+            if (_operationStarted)
+            {
+                throw new InvalidOperationException("Handler has started operations");
+            }
+        }
+
+        private void CheckDisposed()
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
         }
 
         private class RequestState : IDisposable
@@ -86,14 +158,7 @@
                 _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
                 _sendingHeaders = () => { };
 
-                if (request.RequestUri.IsDefaultPort)
-                {
-                    request.Headers.Host = request.RequestUri.Host;
-                }
-                else
-                {
-                    request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
-                }
+                request.Headers.Host = request.RequestUri.IsDefaultPort ? request.RequestUri.Host : request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
 
                 OwinContext = new OwinContext();
                 OwinContext.Set("owin.Version", "1.0");
