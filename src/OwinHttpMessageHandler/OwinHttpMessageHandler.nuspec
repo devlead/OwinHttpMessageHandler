@@ -15,7 +15,8 @@
 		</frameworkAssemblies>
 	</metadata>
 	<files>
-		<file src="bin\Release\OwinHttpMessageHandler.dll" target="lib\net45" />
+		<file src="..\..\build\OwinHttpMessageHandler.dll" target="lib\net45" />
+		<file src="..\..\build\OwinHttpMessageHandler.pdb" target="lib\net45" />
 		<file src="bin\Release\OwinHttpMessageHandler.xml" target="lib\net45" />
 	</files>
 </package>
