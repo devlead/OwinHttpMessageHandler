@@ -5,9 +5,9 @@
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Net.Http.Owin;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.Owin;
 
     /// <summary>
     /// Represents an HttpMessageHanlder that can invoke a request directly against an OWIN pipeline (an 'AppFunc').
