@@ -1,4 +1,4 @@
-properties { 
+properties {
 	$projectName = "OwinHttpMessageHandler"
 	$buildNumber = 0
 	$rootDir  = Resolve-Path .\
@@ -10,7 +10,7 @@ properties {
 	$ilmerge_path = "$srcDir\packages\ILMerge.2.13.0307\ILMerge.exe"
 }
 
-task default -depends Clean, UpdateVersion, RunTests, ILMerge, CreateNuGetPackages
+task default -depends UpdateVersion, RunTests, CreateNuGetPackages
 
 task Clean {
 	Remove-Item $buildOutputDir -Force -Recurse -ErrorAction SilentlyContinue
@@ -24,23 +24,8 @@ task UpdateVersion {
 	Update-Version $newVersion $assemblyInfoFilePath
 }
 
-task Compile { 
+task Compile -depends Clean {
 	exec { msbuild /nologo /verbosity:quiet $solutionFilePath /p:Configuration=Release }
-}
-
-task ILMerge -depends Compile {
-	$dllDir = "$srcDir\OwinHttpMessageHandler\bin\Release"
-	$input_dlls = "$dllDir\OwinHttpMessageHandler.dll"
-	Get-ChildItem -Path $dllDir -Filter *.dll |
-		foreach-object {
-			if ("$_" -ne "OwinHttpMessageHandler.dll") {
-				$input_dlls = "$input_dlls $dllDir\$_"
-			}
-	}
-
-	$input_dlls
-
-	Invoke-Expression "$ilmerge_path /targetplatform:v4 /internalize /allowDup /target:library /out:$buildOutputDir\OwinHttpMessageHandler.dll $input_dlls"
 }
 
 task RunTests -depends Compile {
