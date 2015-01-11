@@ -1,5 +1,5 @@
-Owin.HttpMessageHandler
-=
+OwinHttpMessageHandler [![Build status](https://ci.appveyor.com/api/projects/status/vf9qrs3cdnar24rf/branch/master)](https://ci.appveyor.com/project/damianh/limitsmiddleware) [![NuGet Status](http://img.shields.io/nuget/v/OwinHttpMessageHandler.svg?style=flat)](https://www.nuget.org/packages/OwinHttpMessageHandler/)
+=====================
 
 An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / component using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
 
