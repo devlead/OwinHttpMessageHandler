@@ -9,9 +9,14 @@
     using Xunit;
 
     using AppFunc = System.Func<Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using MidFunc = System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>,
+            System.Threading.Tasks.Task
+        >, System.Func<System.Collections.Generic.IDictionary<string, object>,
+            System.Threading.Tasks.Task
+        >
+    >;
 
     // ReSharper disable InconsistentNaming
-
     public class OwinHttpMessageHandlerTests
     {
         private readonly HttpClient _sut;
@@ -44,7 +49,14 @@
         [Fact]
         public void When_appfunc_paramater_is_null_Then_should_throw()
         {
-            Action act = () => { var handler = new OwinHttpMessageHandler(null); };
+            Action act = () => { var handler = new OwinHttpMessageHandler((AppFunc)null); };
+            act.ShouldThrow<ArgumentNullException>();
+        }
+
+        [Fact]
+        public void When_midfunc_paramater_is_null_Then_should_throw()
+        {
+            Action act = () => { var handler = new OwinHttpMessageHandler((MidFunc)null); };
             act.ShouldThrow<ArgumentNullException>();
         }
 

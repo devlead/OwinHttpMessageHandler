@@ -9,12 +9,20 @@
     using System.Threading;
     using System.Threading.Tasks;
 
+    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using MidFunc = System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>,
+            System.Threading.Tasks.Task
+        >, System.Func<System.Collections.Generic.IDictionary<string, object>,
+            System.Threading.Tasks.Task
+        >
+    >;
+
     /// <summary>
     /// Represents an HttpMessageHanlder that can invoke a request directly against an OWIN pipeline (an 'AppFunc').
     /// </summary>
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
-        private readonly Func<IDictionary<string, object>, Task> _appFunc;
+        private readonly AppFunc _appFunc;
         private CookieContainer _cookieContainer = new CookieContainer();
         private bool _useCookies;
         private bool _operationStarted; //popsicle immutability
@@ -23,14 +31,36 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
         /// </summary>
-        /// <param name="appFunc">The application function.</param>
+        /// <param name="midFunc">An OWIN middleware function that will be terminated with a 404 Not Found.</param>
+        /// <exception cref="System.ArgumentNullException">midFunc</exception>
+        public OwinHttpMessageHandler(MidFunc midFunc)
+        {
+            if (midFunc == null)
+            {
+                throw new ArgumentNullException("midFunc");
+            }
+
+            _appFunc = midFunc(env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.StatusCode = 404;
+                context.Response.ReasonPhrase = "Not Found";
+                return Task.FromResult(0);
+            });
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
+        /// </summary>
+        /// <param name="appFunc">An OWIN application function.</param>
         /// <exception cref="System.ArgumentNullException">appFunc</exception>
-        public OwinHttpMessageHandler(Func<IDictionary<string, object>, Task> appFunc)
+        public OwinHttpMessageHandler(AppFunc appFunc)
         {
             if (appFunc == null)
             {
                 throw new ArgumentNullException("appFunc");
             }
+
             _appFunc = appFunc;
         }
 
