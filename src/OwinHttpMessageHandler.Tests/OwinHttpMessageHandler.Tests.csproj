@@ -59,6 +59,7 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="AllowAutoRedirectTests.cs" />
     <Compile Include="AppFunc.cs" />
     <Compile Include="CookieTests.cs" />
     <Compile Include="OwinHttpMessageHandlerTests.cs" />
