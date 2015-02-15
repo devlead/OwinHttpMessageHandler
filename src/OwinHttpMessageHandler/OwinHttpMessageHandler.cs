@@ -30,7 +30,7 @@
         private bool _useCookies;
         private bool _operationStarted; //popsicle immutability
         private bool _disposed;
-        private bool _allowAutoRedirect = false;
+        private bool _allowAutoRedirect;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
