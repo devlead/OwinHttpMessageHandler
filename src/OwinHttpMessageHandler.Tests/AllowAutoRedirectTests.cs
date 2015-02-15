@@ -12,17 +12,26 @@ namespace System.Net.Http
 
     public class AllowAutoRedirectTests
     {
-        [Fact]
-        public async Task Can_auto_redirect()
+        private OwinHttpMessageHandler _handler;
+
+        public AllowAutoRedirectTests()
         {
             var responders = new Dictionary<string, Action<IOwinContext>>
             {
-                { "/", context =>
+                { "/redirect-absolute", context =>
                     {
                         context.Response.StatusCode = 302;
                         context.Response.ReasonPhrase = "Found";
                         context.Response.Headers.Add("Location", new [] { "http://localhost/redirect" });
-                    }},
+                    }
+                },
+                { "/redirect-relative", context =>
+                    {
+                        context.Response.StatusCode = 302;
+                        context.Response.ReasonPhrase = "Found";
+                        context.Response.Headers.Add("Location", new [] { "redirect" });
+                    }
+                },
                 { "/redirect", context => context.Response.StatusCode = 200 }
             };
             AppFunc appFunc = env =>
@@ -31,17 +40,36 @@ namespace System.Net.Http
                 responders[context.Request.Path.Value](context);
                 return Task.FromResult((object)null);
             };
-            var handler = new OwinHttpMessageHandler(appFunc)
+            _handler = new OwinHttpMessageHandler(appFunc)
             {
                 AllowAutoRedirect = true
             };
+        }
 
-            using (var client = new HttpClient(handler)
+        [Fact]
+        public async Task Can_auto_redirect_with_absolute_location()
+        {
+            using (var client = new HttpClient(_handler)
             {
                 BaseAddress = new Uri("http://localhost")
             })
             {
-                var response = await client.GetAsync("/");
+                var response = await client.GetAsync("/redirect-absolute");
+
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect");
+            }
+        }
+
+        [Fact]
+        public async Task Can_auto_redirect_with_relative_location()
+        {
+            using (var client = new HttpClient(_handler)
+            {
+                BaseAddress = new Uri("http://localhost")
+            })
+            {
+                var response = await client.GetAsync("/redirect-relative");
 
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
                 response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect");

@@ -149,7 +149,14 @@
             while (response.StatusCode == HttpStatusCode.Moved
                 || response.StatusCode == HttpStatusCode.Found)
             {
-                request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+                var location = response.Headers.Location;
+                if (!location.IsAbsoluteUri)
+                {
+                    location = new Uri(response.RequestMessage.RequestUri, location);
+                }
+
+                request = new HttpRequestMessage(HttpMethod.Get, location);
+
                 response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
             }
             return response;
