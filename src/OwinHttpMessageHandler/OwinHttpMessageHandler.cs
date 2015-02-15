@@ -9,7 +9,10 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    using AppFunc = System.Func<System.Collections.Generic.IDictionary<string, object>, System.Threading.Tasks.Task>;
+    using AppFunc = System.Func<
+        System.Collections.Generic.IDictionary<string, object>,
+        System.Threading.Tasks.Task>;
+
     using MidFunc = System.Func<System.Func<System.Collections.Generic.IDictionary<string, object>,
             System.Threading.Tasks.Task
         >, System.Func<System.Collections.Generic.IDictionary<string, object>,
@@ -27,6 +30,7 @@
         private bool _useCookies;
         private bool _operationStarted; //popsicle immutability
         private bool _disposed;
+        private bool _allowAutoRedirect;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
@@ -71,10 +75,15 @@
         }
 
         /// <summary>
-        ///     Gets or sets a value that indicates whether the handler uses the  <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property  to store server cookies and uses these cookies when sending requests.
+        ///     Gets or sets a value that indicates whether the handler uses the 
+        ///     <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property
+        ///     to store server cookies and uses these cookies when sending requests.
         /// </summary>
         /// <returns>
-        ///     Returns <see cref="T:System.Boolean"/>.true if the if the handler supports uses the  <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property  to store server cookies and uses these cookies when sending requests; otherwise false. The default value is true.
+        ///     Returns <see cref="T:System.Boolean"/>.true if the if the handler supports
+        ///     uses the <see cref="P:System.Net.Http.HttpClientHandler.CookieContainer"/> property
+        ///     to store server cookies and uses these cookies when sending requests; otherwise false.
+        ///     The default value is true.
         /// </returns>
         public bool UseCookies
         {
@@ -87,10 +96,28 @@
         }
 
         /// <summary>
+        ///     Gets or sets a value that indicates whether the handler should follow redirection responses.
+        /// </summary>
+        /// <returns>
+        ///     Returns <see cref="T:System.Boolean"/>.true if the if the handler should follow redirection
+        ///     responses; otherwise false. The default value is true.
+        /// </returns>
+        public bool AllowAutoRedirect
+        {
+            get { return _allowAutoRedirect; }
+            set
+            {
+                CheckDisposedOrStarted();
+                _allowAutoRedirect = value;
+            }
+        }
+
+        /// <summary>
         ///     Gets or sets the cookie container used to store server cookies by the handler.
         /// </summary>
         /// <returns>
-        ///     Returns <see cref="T:System.Net.CookieContainer"/>.The cookie container used to store server cookies by the handler.
+        ///     Returns <see cref="T:System.Net.CookieContainer"/>.The cookie container used to store
+        ///     server cookies by the handler.
         /// </returns>
         public CookieContainer CookieContainer 
         {
@@ -102,7 +129,9 @@
             }
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
             if (request == null)
             {
@@ -110,6 +139,26 @@
             }
             _operationStarted = true;
 
+            var response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
+
+            if (!_allowAutoRedirect)
+            {
+                return response;
+            }
+
+            while (response.StatusCode == HttpStatusCode.Moved
+                || response.StatusCode == HttpStatusCode.Found)
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, response.Headers.Location);
+                response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
+            }
+            return response;
+        }
+
+        private async Task<HttpResponseMessage> SendInternalAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
             if (_useCookies)
             {
                 string cookieHeader = _cookieContainer.GetCookieHeader(request.RequestUri);
@@ -121,7 +170,7 @@
 
             var state = new RequestState(request, cancellationToken);
             HttpContent requestContent = request.Content ?? new StreamContent(Stream.Null);
-            Stream body = await requestContent.ReadAsStreamAsync();
+            Stream body = await requestContent.ReadAsStreamAsync().NotOnCapturedContext();
             if (body.CanSeek)
             {
                 // This body may have been consumed before, rewind it.
@@ -135,7 +184,7 @@
             {
                 try
                 {
-                    await _appFunc(state.Environment);
+                    await _appFunc(state.Environment).NotOnCapturedContext();
                     state.CompleteResponse();
                 }
                 catch (Exception ex)
@@ -149,7 +198,7 @@
                 }
             }, cancellationToken);
 
-            HttpResponseMessage response = await state.ResponseTask;
+            HttpResponseMessage response = await state.ResponseTask.NotOnCapturedContext();
             if (_useCookies && response.Headers.Contains("Set-Cookie"))
             {
                 string cookieHeader = string.Join(",", response.Headers.GetValues("Set-Cookie"));
@@ -188,7 +237,9 @@
                 _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
                 _sendingHeaders = () => { };
 
-                request.Headers.Host = request.RequestUri.IsDefaultPort ? request.RequestUri.Host : request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
+                request.Headers.Host = request.RequestUri.IsDefaultPort 
+                    ? request.RequestUri.Host
+                    : request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
 
                 OwinContext = new OwinContext();
                 OwinContext.Set("owin.Version", "1.0");

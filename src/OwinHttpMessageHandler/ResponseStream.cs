@@ -161,7 +161,7 @@ namespace System.Net.Http
         {
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             CancellationTokenRegistration registration = cancellationToken.Register(Abort);
-            await _readLock.WaitAsync(cancellationToken);
+            await _readLock.WaitAsync(cancellationToken).NotOnCapturedContext();
             try
             {
                 int totalRead = 0;
@@ -180,7 +180,7 @@ namespace System.Net.Http
                                 // Graceful close
                                 return totalRead;
                             }
-                            await WaitForDataAsync();
+                            await WaitForDataAsync().NotOnCapturedContext();
                         }
                         _topBuffer = new ArraySegment<byte>(topBuffer);
                     }

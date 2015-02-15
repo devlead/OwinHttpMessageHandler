@@ -44,6 +44,7 @@
     <Compile Include="OwinHttpMessageHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResponseStream.cs" />
+    <Compile Include="TaskExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="OwinHttpMessageHandler.nuspec" />

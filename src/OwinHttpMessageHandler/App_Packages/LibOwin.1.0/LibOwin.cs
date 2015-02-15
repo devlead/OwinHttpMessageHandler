@@ -2565,7 +2565,7 @@ namespace System.Net.Http.Owin
                 // Don't close, it prevents re-winding.
                 using (var reader = new StreamReader(Body, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4 * 1024, leaveOpen: true))
                 {
-                    text = await reader.ReadToEndAsync();
+                    text = await reader.ReadToEndAsync().NotOnCapturedContext();
                 }
                 form = OwinHelpers.GetForm(text);
                 Set("Microsoft.Owin.Form#collection", form);
