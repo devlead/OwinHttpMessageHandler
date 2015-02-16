@@ -10,11 +10,11 @@ namespace System.Net.Http
         Collections.Generic.IDictionary<string, object>,
         System.Threading.Tasks.Task>;
 
-    public class AllowAutoRedirectTests
+    public class AutoRedirectTests
     {
-        private OwinHttpMessageHandler _handler;
+        private readonly OwinHttpMessageHandler _handler;
 
-        public AllowAutoRedirectTests()
+        public AutoRedirectTests()
         {
             var responders = new Dictionary<string, Action<IOwinContext>>
             {
@@ -30,6 +30,13 @@ namespace System.Net.Http
                         context.Response.StatusCode = 302;
                         context.Response.ReasonPhrase = "Found";
                         context.Response.Headers.Add("Location", new [] { "redirect" });
+                    }
+                },
+                { "/redirect-loop", context =>
+                    {
+                        context.Response.StatusCode = 302;
+                        context.Response.ReasonPhrase = "Found";
+                        context.Response.Headers.Add("Location", new[] { "http://localhost/redirect-loop" });
                     }
                 },
                 { "/redirect", context => context.Response.StatusCode = 200 }
@@ -73,6 +80,20 @@ namespace System.Net.Http
 
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
                 response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect");
+            }
+        }
+
+        [Fact]
+        public void When_caught_in_a_redirect_loop_should_throw()
+        {
+            using (var client = new HttpClient(_handler)
+            {
+                BaseAddress = new Uri("http://localhost")
+            })
+            {
+                Func<Task> act = () => client.GetAsync("/redirect-loop");
+
+                act.ShouldThrow<InvalidOperationException>();
             }
         }
     }

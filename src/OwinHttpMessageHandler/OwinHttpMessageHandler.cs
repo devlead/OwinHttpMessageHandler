@@ -25,12 +25,14 @@
     /// </summary>
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
+        public const int DefaultAutoRedirectLimit = 20;
         private readonly AppFunc _appFunc;
         private CookieContainer _cookieContainer = new CookieContainer();
         private bool _useCookies;
         private bool _operationStarted; //popsicle immutability
         private bool _disposed;
         private bool _allowAutoRedirect;
+        private int _autoRedirectLimit = DefaultAutoRedirectLimit;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OwinHttpMessageHandler"/> class.
@@ -113,6 +115,26 @@
         }
 
         /// <summary>
+        ///     Gets or sets the automatic redirect limit. Default is <see cref="DefaultAutoRedirectLimit"/>.
+        /// </summary>
+        /// <value>
+        ///     The automatic redirect limit.
+        /// </value>
+        public int AutoRedirectLimit
+        {
+            get { return _autoRedirectLimit; }
+            set
+            {
+                CheckDisposedOrStarted();
+                if(value < 1)
+                {
+                    throw new ArgumentOutOfRangeException("value", "Auto redirect limit must be greater than or equal to zero.");
+                }
+                _autoRedirectLimit = value;
+            }
+        }
+
+        /// <summary>
         ///     Gets or sets the cookie container used to store server cookies by the handler.
         /// </summary>
         /// <returns>
@@ -141,14 +163,16 @@
 
             var response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
 
-            if (!_allowAutoRedirect)
-            {
-                return response;
-            }
+            int redirectCount = 0;
 
-            while (response.StatusCode == HttpStatusCode.Moved
-                || response.StatusCode == HttpStatusCode.Found)
+            while (_allowAutoRedirect && (
+                    response.StatusCode == HttpStatusCode.Moved
+                    || response.StatusCode == HttpStatusCode.Found))
             {
+                if(redirectCount >= _autoRedirectLimit)
+                {
+                    throw new InvalidOperationException("Too many redirects");
+                }
                 var location = response.Headers.Location;
                 if (!location.IsAbsoluteUri)
                 {
@@ -158,6 +182,8 @@
                 request = new HttpRequestMessage(HttpMethod.Get, location);
 
                 response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
+
+                redirectCount++;
             }
             return response;
         }
