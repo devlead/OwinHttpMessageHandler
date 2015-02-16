@@ -128,7 +128,7 @@
                 CheckDisposedOrStarted();
                 if(value < 1)
                 {
-                    throw new ArgumentOutOfRangeException("value", "Auto redirect limit must be greater than or equal to zero.");
+                    throw new ArgumentOutOfRangeException("value", "Auto redirect limit must be greater than or equal to one.");
                 }
                 _autoRedirectLimit = value;
             }
