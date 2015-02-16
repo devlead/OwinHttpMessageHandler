@@ -93,7 +93,24 @@ namespace System.Net.Http
             {
                 Func<Task> act = () => client.GetAsync("/redirect-loop");
 
-                act.ShouldThrow<InvalidOperationException>();
+                act.ShouldThrow<InvalidOperationException>()
+                    .And.Message.Should().Contain("Limit = 20");
+            }
+        }
+
+        [Fact]
+        public void Can_set_redirect_limit()
+        {
+            _handler.AutoRedirectLimit = 10;
+            using (var client = new HttpClient(_handler)
+            {
+                BaseAddress = new Uri("http://localhost")
+            })
+            {
+                Func<Task> act = () => client.GetAsync("/redirect-loop");
+
+                act.ShouldThrow<InvalidOperationException>()
+                    .And.Message.Should().Contain("Limit = 10");
             }
         }
     }

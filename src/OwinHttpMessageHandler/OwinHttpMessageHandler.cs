@@ -171,7 +171,7 @@
             {
                 if(redirectCount >= _autoRedirectLimit)
                 {
-                    throw new InvalidOperationException("Too many redirects");
+                    throw new InvalidOperationException(string.Format("Too many redirects. Limit = {0}", redirectCount));
                 }
                 var location = response.Headers.Location;
                 if (!location.IsAbsoluteUri)
