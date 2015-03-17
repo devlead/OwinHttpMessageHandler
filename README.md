@@ -5,12 +5,23 @@ An implementation of [System.Net.Http.HttpMessageHandler] that translates an [Ht
 
 [Install via nuget].
 
-Using:
+Example
 -
+
 ```csharp
 Func<IDictionary<string, object>, Task> appFunc;
 ...
-var httpClient = new HttpClient(new OwinHttpMessageHandler(appFunc));
+var handler = new OwinHttpMessageHandler(appFunc)
+{
+    UseCookies = true,
+    AllowAutoRedirect = true,
+}
+var httpClient = new HttpClient(handler)
+{
+    BaseAddress = new Uri("http://localhost")
+}
+
+var response = await httpClient.GetAsync("/");
 ```
 
 By default, the OWIN enviroment is defined to look as though the source of the request is local. You can adjust the OWIN environment by passing in a closure:
@@ -18,10 +29,10 @@ By default, the OWIN enviroment is defined to look as though the source of the r
 ```csharp
 Func<IDictionary<string, object>, Task> appFunc;
 ...
-var httpClient = new HttpClient(new OwinHttpMessageHandler(app, env =>
-    {
-        env[Constants.ServerRemoteIpAddressKey] ="10.1.1.1";
-    }));
+var httpClient = new HttpClient(new OwinHttpMessageHandler(appFunc, env =>
+{
+    env[Constants.ServerRemoteIpAddressKey] ="10.1.1.1";
+}));
 ```
 
 More information on [Http Message Handlers]
