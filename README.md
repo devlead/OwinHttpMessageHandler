@@ -3,13 +3,9 @@ OwinHttpMessageHandler [![Build status](https://ci.appveyor.com/api/projects/sta
 
 An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / component using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
 
-This is distributed as two nuget packages:
+[Install via nuget].
 
-```Owin.HttpMessageHandler``` contains two portable class libraries supporting the same platforms as HttpClient, including .Net 4+, Silverlight 4+ and Windows Phone 7.5+.
-
-```Owin.HttpMessageHandler.Sources``` contains just the source code if you want include it in your app or library without taking on a package dependency.
-
-Using
+Using:
 -
 ```csharp
 Func<IDictionary<string, object>, Task> appFunc;
@@ -24,7 +20,7 @@ Func<IDictionary<string, object>, Task> appFunc;
 ...
 var httpClient = new HttpClient(new OwinHttpMessageHandler(app, env =>
     {
-        env[Constants.ServerRemoteIpAddressKey] ="10.1.1.1.";
+        env[Constants.ServerRemoteIpAddressKey] ="10.1.1.1";
     }));
 ```
 
@@ -37,6 +33,7 @@ Follow me [@randompunter]
   [System.Net.Http.HttpMessageHandler]: http://msdn.microsoft.com/en-us/library/system.net.http.httpmessagehandler.aspx
   [HttpRequestMessage]: http://msdn.microsoft.com/en-us/library/system.net.http.httprequestmessage.aspx
   [OWIN]: http://owin.org/
+  [Install via nuget]: http://www.nuget.org/packages/OwinHttpMessageHandler/
   [HttpResponseMessage]: http://msdn.microsoft.com/en-us/library/system.net.http.httpresponsemessage.aspx
   [HttpClient]: http://msdn.microsoft.com/en-us/library/system.net.http.httpclient.aspx
   [Http Message Handlers]: http://www.asp.net/web-api/overview/working-with-http/http-message-handlers
