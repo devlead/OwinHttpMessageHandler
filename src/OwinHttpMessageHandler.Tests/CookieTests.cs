@@ -54,5 +54,34 @@
                 .Should()
                 .Be("c2");
         }
+
+        [Fact]
+        public async Task Setting_cookie_when_headers_are_sent_then_should_have_cookie_in_container()
+        {
+            const string cookieName1 = "testcookie1";
+
+            var uri = new Uri("http://localhost/");
+            AppFunc appFunc = async env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.OnSendingHeaders(_ =>
+                {
+                    context.Response.Cookies.Append(cookieName1, "c1");
+                }, null);
+                await context.Response.WriteAsync("Test");
+            };
+
+            var handler = new OwinHttpMessageHandler(appFunc) { UseCookies = true };
+            using (var client = new HttpClient(handler))
+            {
+                await client.GetAsync(uri);
+            }
+
+            handler
+                .CookieContainer
+                .GetCookies(uri)[cookieName1]
+                .Should()
+                .NotBeNull();
+        }
     }
 }
