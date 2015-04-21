@@ -91,7 +91,7 @@
         {
             const string cookieName1 = "testcookie1";
 
-            var uri = new Uri("http://localhost/");
+            var uri = new Uri("http://localhost/login");
 
 
             AppFunc appFunc = async env =>
@@ -145,7 +145,7 @@
             var handler = new OwinHttpMessageHandler(myMw) { UseCookies = true };
             using (var client = new HttpClient(handler))
             {
-                await client.GetAsync(uri);
+                await client.PostAsync(uri, new StringContent(""));
             }
 
             handler
