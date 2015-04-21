@@ -1,5 +1,7 @@
 ﻿namespace System.Net.Http
 {
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Microsoft.Owin;
@@ -82,6 +84,75 @@
                 .GetCookies(uri)[cookieName1]
                 .Should()
                 .NotBeNull();
+        }
+
+        [Fact]
+        public async Task Setting_cookie_when_headers_are_sent_then_should_have_cookie_in_container23()
+        {
+            const string cookieName1 = "testcookie1";
+
+            var uri = new Uri("http://localhost/login");
+
+
+            AppFunc appFunc = async env =>
+            {
+                var context = new OwinContext(env);
+
+                context.Response.Headers.Append("Location", "/");
+
+                await context.Response.WriteAsync("Test");
+            };
+
+
+            AppFunc cookie =  env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.OnSendingHeaders(_ =>
+                {
+                    context.Response.Cookies.Append("auth", "123");
+                }, null);
+
+                return appFunc(env);
+            };
+
+            AppFunc myMw = env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.OnSendingHeaders(_ =>
+                {
+                    if ((string)env["owin.RequestPath"] == "/login" && (string)env["owin.RequestMethod"] == "POST")
+                    {
+                        var responseHeaders = (IDictionary<string, string[]>)env["owin.ResponseHeaders"];
+                        if (responseHeaders.ContainsKey("Set-Cookie"))
+                        {
+                            var setcookies = responseHeaders["Set-Cookie"].ToList();
+                            var authcookie = setcookies.FirstOrDefault(x => x.StartsWith("auth"));
+                            if (authcookie != null)
+                            {
+                                var authcookieValue = authcookie.Split(new[] { '=' }, StringSplitOptions.RemoveEmptyEntries)[1].Split(new[] { ';' })[0];
+                                //Make a secure token. This is not a good example
+                                var csrfToken = new String(authcookieValue.Reverse().ToArray());
+                                setcookies.Add("XSRF-TOKEN=" + csrfToken + ";path=/");
+                                responseHeaders["Set-Cookie"] = setcookies.ToArray();
+                            }
+                        }
+                    }
+                }, null);
+
+                return cookie(env);
+            };
+
+            var handler = new OwinHttpMessageHandler(myMw) { UseCookies = true };
+            using (var client = new HttpClient(handler))
+            {
+                await client.PostAsync(uri, new StringContent(""));
+            }
+
+            handler
+                .CookieContainer
+                .GetCookies(uri).Count
+                .Should()
+                .Be(2);
         }
     }
 }
