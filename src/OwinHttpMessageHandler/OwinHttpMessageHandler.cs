@@ -289,8 +289,8 @@
                     var prior = _sendingHeaders;
                     _sendingHeaders = () =>
                     {
-                        prior();
                         callback(state);
+                        prior();
                     };
                 });
 
