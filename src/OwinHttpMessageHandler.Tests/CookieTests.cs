@@ -61,6 +61,14 @@
             const string cookieName1 = "testcookie1";
 
             var uri = new Uri("http://localhost/");
+
+            AppFunc inner = async env =>
+            {
+                var context = new OwinContext(env);
+                context.Response.Headers.Append("Location", "/");
+                await context.Response.WriteAsync("Test");
+            };
+
             AppFunc appFunc = async env =>
             {
                 var context = new OwinContext(env);
@@ -68,7 +76,7 @@
                 {
                     context.Response.Cookies.Append(cookieName1, "c1");
                 }, null);
-                await context.Response.WriteAsync("Test");
+                await inner(env);
             };
 
             var handler = new OwinHttpMessageHandler(appFunc) { UseCookies = true };
