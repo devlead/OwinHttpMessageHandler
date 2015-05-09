@@ -13,7 +13,7 @@
         "System.Net.Http": "4.0.0.0"
       }
     },
-    "dnx450": {
+    "dnx451": {
       "frameworkAssemblies": {
         "System.Net.Http": "4.0.0.0"
       }
