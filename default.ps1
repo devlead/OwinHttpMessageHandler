@@ -7,7 +7,7 @@ properties {
 	$srcDir = "$rootDir\src"
 	$solutionFilePath = "$srcDir\$projectName.sln"
 	$assemblyInfoFilePath = "$srcDir\SharedAssemblyInfo.cs"
-	$ilmerge_path = "$srcDir\packages\ILMerge.2.13.0307\ILMerge.exe"
+	$nugetPath = "$srcDir\.nuget\nuget.exe"
 }
 
 task default -depends UpdateVersion, RunTests, CreateNuGetPackages
@@ -37,6 +37,15 @@ task RunTests -depends Compile {
 		}
         .$xunitRunner "$srcDir\$project\bin\Release\$project.dll" /html "$reportsDir\xUnit\$project\index.html"
     }
+}
+
+task BuildDnx {
+	&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
+	dnvm upgrade
+	dnu restore
+	dnu build .\src\OwinHttpMessageHandler
+	dnu build .\src\OwinHttpMessageHandler.Tests
+	dnx .\src\OwinHttpMessageHandler.Tests test
 }
 
 task CreateNuGetPackages -depends Compile {
