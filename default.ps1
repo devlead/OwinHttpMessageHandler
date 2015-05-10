@@ -46,8 +46,9 @@ task BuildDnx {
 	pushd
 	cd .\src
 	dnu restore
-	dnu build .\OwinHttpMessageHandler
-	dnu build .\OwinHttpMessageHandler.Tests
+	dnu build .\OwinHttpMessageHandler --configuration Release
+	dnu pack .\OwinHttpMessageHandler --configuration Release --out $buildOutputDir
+	dnu build .\OwinHttpMessageHandler.Tests --configuration Release
 	dnx .\OwinHttpMessageHandler.Tests test
 	popd
 }
@@ -59,4 +60,34 @@ task CreateNuGetPackages -depends Compile {
 	gci $srcDir -Recurse -Include *.nuspec | % {
 		exec { .$srcDir\.nuget\nuget.exe pack $_ -o $buildOutputDir -version $packageVersion }
 	}
+}
+
+function Get-Version
+{
+	param
+	(
+		[string]$assemblyInfoFilePath
+	)
+	Write-Host "path $assemblyInfoFilePath"
+	$pattern = '(?<=^\[assembly\: AssemblyVersion\(\")(?<versionString>\d+\.\d+\.\d+\.\d+)(?=\"\))'
+	$assmblyInfoContent = Get-Content $assemblyInfoFilePath
+	return $assmblyInfoContent | Select-String -Pattern $pattern | Select -expand Matches |% {$_.Groups['versionString'].Value}
+}
+
+function Update-Version
+{
+	param
+    (
+		[string]$version,
+		[string]$assemblyInfoFilePath
+	)
+
+	$newVersion = 'AssemblyVersion("' + $version + '")';
+	$newFileVersion = 'AssemblyFileVersion("' + $version + '")';
+	$tmpFile = $assemblyInfoFilePath + ".tmp"
+
+	Get-Content $assemblyInfoFilePath |
+		%{$_ -replace 'AssemblyFileVersion\("[0-9]+(\.([0-9]+|\*)){1,3}"\)', $newFileVersion }  | Out-File -Encoding UTF8 $tmpFile
+
+	Move-Item $tmpFile $assemblyInfoFilePath -force
 }
