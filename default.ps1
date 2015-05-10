@@ -41,6 +41,7 @@ task RunTests -depends Compile {
 
 task BuildDnx {
 	&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
+	$env:Path
 	dnvm upgrade
 	dnu restore
 	dnu build .\src\OwinHttpMessageHandler
