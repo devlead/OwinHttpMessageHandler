@@ -17,7 +17,5 @@ foreach($packageConfig in $packageConfigs){
 }
 
 Import-Module .\src\packages\psake.4.4.1\tools\psake.psm1
-Import-Module .\BuildFunctions.psm1
 Invoke-Psake .\default.ps1 $task -framework "4.5.1x64" -properties @{ buildNumber=$buildNumber }
-Remove-Module BuildFunctions
 Remove-Module psake
