@@ -1,7 +1,8 @@
 OwinHttpMessageHandler [![Build status](https://ci.appveyor.com/api/projects/status/vf9qrs3cdnar24rf/branch/master)](https://ci.appveyor.com/project/damianh/limitsmiddleware) [![NuGet Status](http://img.shields.io/nuget/v/OwinHttpMessageHandler.svg?style=flat)](https://www.nuget.org/packages/OwinHttpMessageHandler/)
 =====================
 
-An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / middleware using [HttpClient] without actually hitting the network stack. Useful for testing and embedded scenarios.
+An implementation of [System.Net.Http.HttpMessageHandler] that translates an [HttpRequestMessage] into an [OWIN] compatible environment dictionary, calls the supplied AppFunc and translates the result to an [HttpResponseMessage]. This allows you to call an OWIN application / middleware using [HttpClient] without actually hitting the network stack. Useful for [testing] and embedded scenarios.
+
 
 [Install via nuget].
 
@@ -44,6 +45,7 @@ Follow me [@randompunter]
   [OWIN]: http://owin.org/
   [Install via nuget]: http://www.nuget.org/packages/OwinHttpMessageHandler/
   [HttpResponseMessage]: http://msdn.microsoft.com/en-us/library/system.net.http.httpresponsemessage.aspx
+  [testing]: http://dhickey.ie/2015/04/testing-owin-applications-with-httpclient-and-owinhttpmessagehandler/
   [HttpClient]: http://msdn.microsoft.com/en-us/library/system.net.http.httpclient.aspx
   [Http Message Handlers]: http://www.asp.net/web-api/overview/working-with-http/http-message-handlers
   [MIT]: http://opensource.org/licenses/MIT
