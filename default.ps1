@@ -41,11 +41,9 @@ task RunTests -depends Compile {
 
 task BuildDnx {
 	Remove-Item "$srcDir\artifacts" -Force -Recurse -ErrorAction SilentlyContinue
+	$env:Path
 	&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
 	$env:Path
-	"--"
-	[System.Environment]::GetEnvironmentVariable("Path","Machine")
-	"--"
 	dnvm upgrade
 	pushd
 	cd .\src
