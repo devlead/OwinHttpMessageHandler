@@ -40,13 +40,20 @@ task RunTests -depends Compile {
 }
 
 task BuildDnx {
+	Remove-Item "$srcDir\artifacts" -Force -Recurse -ErrorAction SilentlyContinue
 	&{$Branch='dev';iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/aspnet/Home/dev/dnvminstall.ps1'))}
 	$env:Path
+	"--"
+	[System.Environment]::GetEnvironmentVariable("Path","Machine")
+	"--"
 	dnvm upgrade
+	pushd
+	cd .\src
 	dnu restore
-	dnu build .\src\OwinHttpMessageHandler
-	dnu build .\src\OwinHttpMessageHandler.Tests
-	dnx .\src\OwinHttpMessageHandler.Tests test
+	dnu build .\OwinHttpMessageHandler
+	dnu build .\OwinHttpMessageHandler.Tests
+	dnx .\OwinHttpMessageHandler.Tests test
+	popd
 }
 
 task CreateNuGetPackages -depends Compile {
