@@ -23,7 +23,7 @@ var httpClient = new HttpClient(handler)
 var response = await httpClient.GetAsync("/");
 ```
 
-By default, the OWIN environment is defined to look as though the source of the request is local. You can adjust the OWIN environment by passing in a closure:
+By default, the OWIN environment is defined to look as though the source of the request is local. You can adjust the OWIN environment via a delegate:
 
 ```csharp
 Func<IDictionary<string, object>, Task> appFunc;
