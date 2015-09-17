@@ -12,7 +12,7 @@ Using
 ```csharp
 var handler = new OwinHttpMessageHandler(appFunc) // Alternatively you can pass in a MidFunc
 {
-    UseCookies = true,
+    UseCookies = true, // Will send cookies on subsequent requests. Default is false.
     AllowAutoRedirect = true // The handler will auto follow 301/302
 }
 var httpClient = new HttpClient(handler)
