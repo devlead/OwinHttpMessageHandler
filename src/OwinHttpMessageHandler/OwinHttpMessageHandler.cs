@@ -167,10 +167,14 @@
             var response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
 
             int redirectCount = 0;
+            int statusCode = (int)response.StatusCode;
 
-            while (_allowAutoRedirect && (
-                    response.StatusCode == HttpStatusCode.Moved
-                    || response.StatusCode == HttpStatusCode.Found))
+            if(_allowAutoRedirect && statusCode >= 300 && statusCode <= 399)
+            {
+                
+            }
+
+            while (_allowAutoRedirect && statusCode >= 300 && statusCode <= 399)
             {
                 if(redirectCount >= _autoRedirectLimit)
                 {
