@@ -18,7 +18,7 @@ namespace System.Net.Http
         {
             var responders = new Dictionary<string, Action<IOwinContext>>
             {
-                { "/redirect-absolute", context =>
+                { "/redirect-absolute-302", context =>
                     {
                         context.Response.StatusCode = 302;
                         context.Response.ReasonPhrase = "Found";
@@ -30,6 +30,27 @@ namespace System.Net.Http
                         context.Response.StatusCode = 302;
                         context.Response.ReasonPhrase = "Found";
                         context.Response.Headers.Add("Location", new [] { "redirect" });
+                    }
+                },
+                { "/redirect-absolute-301", context =>
+                    {
+                        context.Response.StatusCode = 301;
+                        context.Response.ReasonPhrase = "Moved Permanently";
+                        context.Response.Headers.Add("Location", new [] { "http://localhost/redirect" });
+                    }
+                },                
+                { "/redirect-absolute-303", context =>
+                    {
+                        context.Response.StatusCode = 303;
+                        context.Response.ReasonPhrase = "See Other";
+                        context.Response.Headers.Add("Location", new [] { "http://localhost/redirect" });
+                    }
+                },
+                { "/redirect-absolute-307", context =>
+                    {
+                        context.Response.StatusCode = 307;
+                        context.Response.ReasonPhrase = "Temporary Redirect";
+                        context.Response.Headers.Add("Location", new [] { "http://localhost/redirect" });
                     }
                 },
                 { "/redirect-loop", context =>
@@ -53,18 +74,53 @@ namespace System.Net.Http
             };
         }
 
-        [Fact]
-        public async Task Can_auto_redirect_with_absolute_location()
+        [Theory]
+        [InlineData(301)]
+        [InlineData(302)]
+        [InlineData(303)]
+        [InlineData(307)]        
+        public async Task Can_auto_redirect_with_absolute_location(int code)
         {
             using (var client = new HttpClient(_handler)
             {
                 BaseAddress = new Uri("http://localhost")
             })
             {
-                var response = await client.GetAsync("/redirect-absolute");
+                var response = await client.GetAsync("/redirect-absolute-"+code);
 
                 response.StatusCode.Should().Be(HttpStatusCode.OK);
                 response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect");
+            }
+        }
+
+        [Fact]
+        public async Task Does_not_redirect_on_POST_and_307()
+        {
+            using (var client = new HttpClient(_handler)
+            {
+                BaseAddress = new Uri("http://localhost")
+            })
+            {
+                var response = await client.PostAsync("/redirect-absolute-307", new StringContent("the-body"));
+
+                response.StatusCode.Should().Be(HttpStatusCode.TemporaryRedirect);
+                response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect-absolute-307");
+            }
+        }
+
+        [Fact]
+        public async Task Keeps_method_on_a_307()
+        {
+            using (var client = new HttpClient(_handler)
+            {
+                BaseAddress = new Uri("http://localhost")
+            })
+            {
+                var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Head, "/redirect-absolute-307"));
+
+                response.StatusCode.Should().Be(HttpStatusCode.OK);
+                response.RequestMessage.RequestUri.AbsoluteUri.Should().Be("http://localhost/redirect");
+                response.RequestMessage.Method.Should().Be(HttpMethod.Head);
             }
         }
 
