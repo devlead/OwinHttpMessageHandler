@@ -1,5 +1,6 @@
 ﻿namespace System.Net.Http
 {
+    using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Microsoft.Owin;
@@ -9,7 +10,6 @@
     using Owin;
     using Xunit;
     using AppFunc = Func<Collections.Generic.IDictionary<string, object>, Threading.Tasks.Task>;
-    using OwinServerFactory = Microsoft.Owin.Host.HttpListener.OwinServerFactory;
 
     public class OnSendingHeadersTests
     {
@@ -69,9 +69,9 @@
             {
                 var response = await client.GetAsync(_uri);
 
-                response.Headers.GetValues("Set-Cookie")
-                    .Should()
-                    .HaveCount(2);
+                var setCookies = response.Headers.GetValues("Set-Cookie");
+
+                setCookies.Should().HaveCount(2, setCookies.Count().ToString());
             }
         }
 
@@ -128,7 +128,7 @@
             }
         }
 
-        /*[Fact(Skip = "Will fail because of bug in TestServer")]
+        [Fact(Skip = "Will fail because of bug in TestServer")]
         public async Task Using_TestServer_then_should_have_2_cookies()
         {
             var testServer = TestServer.Create(a1 => a1.Run(ctx => _appFunc(ctx.Environment)));
@@ -140,6 +140,6 @@
                     .Should()
                     .HaveCount(2);
             }
-        }*/
+        }
     }
 }
