@@ -5,8 +5,6 @@
     using System.IO;
     using System.Linq;
     using System.Net;
-    using System.Net;
-    using System.Net.Http;
     using System.Net.Http.LibOwin;
     using System.Threading;
     using System.Threading.Tasks;
@@ -27,6 +25,9 @@
     /// </summary>
     public class OwinHttpMessageHandler : HttpMessageHandler
     {
+        /// <summary>
+        /// The default number of redirects that will be auto followed.
+        /// </summary>
         public const int DefaultAutoRedirectLimit = 20;
         private readonly AppFunc _appFunc;
         private CookieContainer _cookieContainer = new CookieContainer();
