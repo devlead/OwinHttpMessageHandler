@@ -46,7 +46,7 @@
         {
             if (midFunc == null)
             {
-                throw new ArgumentNullException("midFunc");
+                throw new ArgumentNullException(nameof(midFunc));
             }
 
             _appFunc = midFunc(env =>
@@ -67,7 +67,7 @@
         {
             if (appFunc == null)
             {
-                throw new ArgumentNullException("appFunc");
+                throw new ArgumentNullException(nameof(appFunc));
             }
 
             _appFunc = appFunc;
