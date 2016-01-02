@@ -29,13 +29,13 @@ task Compile -depends Clean {
 }
 
 task RunTests -depends Compile {
-    $xunitRunner = "$srcDir\packages\xunit.runners.1.9.2\tools\xunit.console.clr4.exe"
+    $xunitRunner = "$srcDir\packages\xunit.runner.console.2.1.0\tools\xunit.console.exe"
     gci . -Recurse -Include *Tests.csproj, Tests.*.csproj | % {
         $project = $_.BaseName
         if(!(Test-Path $reportsDir\xUnit\$project)){
             New-Item $reportsDir\xUnit\$project -Type Directory
         }
-        .$xunitRunner "$srcDir\$project\bin\Release\$project.dll" /html "$reportsDir\xUnit\$project\index.html"
+        .$xunitRunner "$srcDir\$project\bin\Release\$project.dll"
     }
 }
 
