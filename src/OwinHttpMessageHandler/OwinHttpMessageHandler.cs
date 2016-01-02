@@ -160,7 +160,7 @@
         {
             if (request == null)
             {
-                throw new ArgumentNullException("request");
+                throw new ArgumentNullException(nameof(request));
             }
             _operationStarted = true;
 
@@ -169,16 +169,11 @@
             int redirectCount = 0;
             int statusCode = (int)response.StatusCode;
 
-            if(_allowAutoRedirect && statusCode >= 300 && statusCode <= 399)
-            {
-                
-            }
-
             while (_allowAutoRedirect && statusCode >= 300 && statusCode <= 399)
             {
                 if(redirectCount >= _autoRedirectLimit)
                 {
-                    throw new InvalidOperationException(string.Format("Too many redirects. Limit = {0}", redirectCount));
+                    throw new InvalidOperationException($"Too many redirects. Limit = {redirectCount}");
                 }
                 var location = response.Headers.Location;
                 if (!location.IsAbsoluteUri)
@@ -187,9 +182,9 @@
                 }
 
                 request = new HttpRequestMessage(HttpMethod.Get, location);
-
                 response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
 
+                statusCode = (int) response.StatusCode;
                 redirectCount++;
             }
             return response;
