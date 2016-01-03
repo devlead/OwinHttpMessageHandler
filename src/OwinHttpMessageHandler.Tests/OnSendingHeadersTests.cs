@@ -54,7 +54,7 @@
             };
         }
 
-        [Fact(Skip = "Fails in AppVeyor for some stupid reason *rage*")]
+        [Fact]
         public async Task Using_OwinHttpMessageHandler_then_should_have_2_cookies()
         {
             var handler = new OwinHttpMessageHandler(_appFunc)
@@ -71,7 +71,7 @@
 
                 var setCookies = response.Headers.GetValues("Set-Cookie");
 
-                setCookies.Should().HaveCount(2, setCookies.Count().ToString());
+                setCookies.Should().HaveCount(2);
             }
         }
 
