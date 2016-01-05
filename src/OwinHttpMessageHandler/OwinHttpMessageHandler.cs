@@ -169,7 +169,9 @@
             int redirectCount = 0;
             int statusCode = (int)response.StatusCode;
 
-            while (_allowAutoRedirect && statusCode >= 300 && statusCode <= 399)
+            while (_allowAutoRedirect && 
+                (IsRedirectToGet(statusCode) || 
+                (IsBodylessRequest(request) && statusCode == 307)))
             {
                 if(redirectCount >= _autoRedirectLimit)
                 {
@@ -181,13 +183,26 @@
                     location = new Uri(response.RequestMessage.RequestUri, location);
                 }
 
-                request = new HttpRequestMessage(HttpMethod.Get, location);
+                var redirectMethod = IsRedirectToGet(statusCode) ? HttpMethod.Get : request.Method;
+                request = new HttpRequestMessage(redirectMethod, location);
                 response = await SendInternalAsync(request, cancellationToken).NotOnCapturedContext();
 
                 statusCode = (int) response.StatusCode;
                 redirectCount++;
             }
             return response;
+        }
+
+        private static bool IsRedirectToGet(int code)
+        {            
+            return code == 301 || code == 302 || code == 303; 
+        }
+
+        private static bool IsBodylessRequest(HttpRequestMessage req)
+        {
+            return req.Method == HttpMethod.Get 
+                || req.Method == HttpMethod.Head 
+                || req.Method == HttpMethod.Delete;
         }
 
         private async Task<HttpResponseMessage> SendInternalAsync(
