@@ -79,7 +79,8 @@ Task("Run-Unit-Tests")
 {
     XUnit2("./src/**/bin/" + configuration + "/*.Tests.dll", new XUnit2Settings {
         ToolPath = "./tools/xunit.runner.console/tools/xunit.console.exe",
-        NoAppDomain = true
+        NoAppDomain = true,
+        MaxThreads=1
         });
 });
 
