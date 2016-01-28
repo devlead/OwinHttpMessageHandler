@@ -8,7 +8,7 @@
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
         <licenseUrl>https://github.com/damianh/OwinHttpMessageHandler/blob/master/LICENSE</licenseUrl>
         <description>An implementation of HttpMessageHandler for use with HttpClient that invokes requests directly against an OWIN application. Useful for testing and embedded scenarios.</description>
-        <releaseNotes>Can auto follow redirects for all 3xx status codes.</releaseNotes>
+        <releaseNotes>Fix for redirect logic: only for 301 301 304 and 307</releaseNotes>
         <projectUrl>https://github.com/damianh/OwinHttpMessageHandler</projectUrl>
         <tags>owin httpclient httpmessagehandler embedded</tags>
         <frameworkAssemblies>
