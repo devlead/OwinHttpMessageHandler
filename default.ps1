@@ -10,7 +10,7 @@ properties {
     $nugetPath = "$srcDir\.nuget\nuget.exe"
 }
 
-task default -depends UpdateVersion, RunTests, CreateNuGetPackages
+task default -depends UpdateVersion, CreateNuGetPackages
 
 task Clean {
     Remove-Item $buildOutputDir -Force -Recurse -ErrorAction SilentlyContinue
