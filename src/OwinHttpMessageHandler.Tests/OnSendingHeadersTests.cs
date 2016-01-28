@@ -71,6 +71,12 @@
 
                 var setCookies = response.Headers.GetValues("Set-Cookie");
 
+                //OMG :)
+                foreach (var cookie in setCookies)
+                {
+                    Console.WriteLine("Set-Cookie: {0}", cookie);
+                }
+
                 setCookies.Should().HaveCount(2);
             }
         }

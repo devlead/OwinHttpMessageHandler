@@ -1,0 +1,10 @@
+# Gitt Settings
+init:
+  - git config --global core.autocrlf true
+
+# Operating system (build VM template)
+os: Visual Studio 2015
+
+# Build script
+build_script:
+  - ps: .\cake.ps1 -Target "AppVeyor"
