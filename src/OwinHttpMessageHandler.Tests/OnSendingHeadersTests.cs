@@ -27,7 +27,7 @@
                 await context.Response.WriteAsync("Test");
             };
 
-            AppFunc inner2 = async env =>
+            AppFunc inner2 = env =>
             {
                 var context = new OwinContext(env);
                 context.Response.OnSendingHeaders(_ =>
@@ -37,10 +37,10 @@
                         context.Response.Cookies.Append(CookieName1, "c1");
                     }
                 }, null);
-                await inner(env);
+                return inner(env);
             };
 
-            _appFunc = async env =>
+            _appFunc = env =>
             {
                 var context = new OwinContext(env);
                 context.Response.OnSendingHeaders(_ =>
@@ -50,7 +50,7 @@
                         context.Response.Cookies.Append(CookieName2, "c2");
                     }
                 }, null);
-                await inner2(env);
+                return inner2(env);
             };
         }
 
